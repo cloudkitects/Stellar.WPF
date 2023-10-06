@@ -47,7 +47,22 @@ public readonly struct ChangeOffset : IEquatable<ChangeOffset>
     /// </summary>
     public ChangeOffset(int offset, int removalLength, int insertionLength)
     {
-        this.offset = (int)(uint)offset;
+        if (offset < 0)
+        {
+            throw new ArgumentOutOfRangeException(nameof(offset), $"{offset} < 0");
+        }
+        
+        if (removalLength < 0)
+        {
+            throw new ArgumentOutOfRangeException(nameof(removalLength), $"{removalLength} < 0");
+        }
+        
+        if (insertionLength < 0)
+        {
+            throw new ArgumentOutOfRangeException(nameof(insertionLength), $"{insertionLength} < 0");
+        }
+
+        this.offset = offset;
         removalLengthWithDeletionFlag = (uint)removalLength;
         insertionLengthWithMovementFlag = (uint)insertionLength;
     }
