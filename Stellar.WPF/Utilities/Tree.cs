@@ -361,7 +361,7 @@ public sealed class Tree<T> : IList<T>, ICloneable
     }
     #endregion
 
-    #region indexers and finders
+    #region indexing
     /// <summary>
     /// A branch + index in tree composite, used to determine
     /// whether other branches are close and speed up find ops.
@@ -825,11 +825,11 @@ public sealed class Tree<T> : IList<T>, ICloneable
 
             foreach (T element in this)
             {
-                b.Append(b.Length == 0 ? '{' : ", ");
+                b.Append(b.Length == 0 ? "{ " : ", ");
                 b.Append(element!.ToString());
             }
 
-            b.Append('}');
+            b.Append(" }");
 
             return b.ToString();
         }

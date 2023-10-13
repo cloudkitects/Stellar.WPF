@@ -6,6 +6,7 @@ using System.ComponentModel;
 using System.Diagnostics;
 using System.Globalization;
 using System.Threading;
+
 using Stellar.WPF.Utilities;
 
 namespace Stellar.WPF.Document;
@@ -139,10 +140,7 @@ public sealed class Document : IDocument, INotifyPropertyChanged
         lineTree = new LineTree(this);
         lineManager = new LineManager(lineTree, this);
         
-        lineTrackers.CollectionChanged += delegate
-        {
-            lineManager.UpdateLineTrackers();
-        };
+        lineTrackers.CollectionChanged += delegate { lineManager.UpdateLineTrackers(); };
 
         anchorTree = new AnchorTree(this);
         undoStack = new UndoStack();
@@ -218,7 +216,7 @@ public sealed class Document : IDocument, INotifyPropertyChanged
     /// <inheritdoc/>
     public int IndexOfAny(char[] anyOf, int startIndex, int count)
     {
-        DebugVerifyAccess(); // frequently called (NewLineFinder), so must be fast in release builds
+        DebugVerifyAccess();
         
         return charTree.IndexOfAny(anyOf, startIndex, count);
     }
@@ -242,32 +240,12 @@ public sealed class Document : IDocument, INotifyPropertyChanged
     /// <inheritdoc/>
     public char GetCharAt(int offset)
     {
-        DebugVerifyAccess(); // frequently called, so must be fast in release builds
+        DebugVerifyAccess();
         
         return charTree[offset];
     }
 
     #region events
-    /// <summary>
-    /// Event raised after <see cref="Text"/> property changed.
-    /// </summary>
-    public event EventHandler? TextChanged;
-
-    /// <summary>
-    /// Event raised for completing a group of changes.
-    /// </summary>
-    event EventHandler IDocument.ChangeCompleted
-    {
-        add    { TextChanged += value; }
-        remove { TextChanged -= value; }
-    }
-
-    /// <summary>
-    /// Event raised after <see cref="Text"/>, <see cref="TextLength"/>, <see cref="LineCount"/>,
-    /// or the <see cref="UndoStack"/> changes.
-    /// </summary>
-    public event PropertyChangedEventHandler? PropertyChanged;
-
     /// <summary>
     /// Event raised before the document changes.
     /// </summary>
@@ -307,7 +285,9 @@ public sealed class Document : IDocument, INotifyPropertyChanged
     /// </remarks>
     public event EventHandler<DocumentChangeEventArgs> Changing;
 
-    // Unfortunately EventHandler<T> is invariant, so we have to use two separate events
+    /// <summary>
+    /// A separate event is required given EventHandler<T> is invariant.
+    /// </summary>
     private event EventHandler<TextChangeEventArgs> textChanging;
 
     event EventHandler<TextChangeEventArgs> IDocument.TextChanging
@@ -317,12 +297,32 @@ public sealed class Document : IDocument, INotifyPropertyChanged
     }
 
     /// <summary>
+    /// Event raised for completing a group of changes.
+    /// </summary>
+    event EventHandler IDocument.ChangeCompleted
+    {
+        add    { TextChanged += value; }
+        remove { TextChanged -= value; }
+    }
+
+    /// <summary>
+    /// Event raised after <see cref="Text"/>, <see cref="TextLength"/>, <see cref="LineCount"/>,
+    /// or the <see cref="UndoStack"/> changes.
+    /// </summary>
+    public event PropertyChangedEventHandler? PropertyChanged;
+
+    /// <summary>
     /// Is raised after the document has changed.
     /// </summary>
     /// <remarks><inheritdoc cref="Changing"/></remarks>
     public event EventHandler<DocumentChangeEventArgs> Changed;
 
     private event EventHandler<TextChangeEventArgs> textChanged;
+
+    /// <summary>
+    /// Event raised after <see cref="Text"/> property changed.
+    /// </summary>
+    public event EventHandler? TextChanged;
 
     event EventHandler<TextChangeEventArgs> IDocument.TextChanged
     {
@@ -862,7 +862,7 @@ public sealed class Document : IDocument, INotifyPropertyChanged
 
         DocumentChangeEventArgs args = new(offset, removedText, newText, changeOffsetColl);
 
-        // fire DocumentChanging event
+        // fire changing events event
         Changing?.Invoke(this, args);
 
         textChanging?.Invoke(this, args);
@@ -1102,6 +1102,9 @@ public sealed class Document : IDocument, INotifyPropertyChanged
     #endregion
 
     #region Debugging
+    /// <summary>
+    /// Debug-only version, speeds up frequent callers like <see cref="NewLineFinder"/> in release builds.
+    /// </summary>
     [Conditional("DEBUG")]
     internal void DebugVerifyAccess() => VerifyAccess();
 

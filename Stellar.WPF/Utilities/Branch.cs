@@ -275,10 +275,10 @@ internal class Branch<T>
             }
             else
             {
-                var amountInLeft = result.left.length - index;
+                var leftCount = result.left.length - index;
 
-                result.left = result.left.Populate(array, arrayIndex, index, amountInLeft);
-                result.right = result.right!.Populate(array, arrayIndex + amountInLeft, 0, count - amountInLeft);
+                result.left = result.left.Populate(array, arrayIndex, index, leftCount);
+                result.right = result.right!.Populate(array, arrayIndex + leftCount, 0, count - leftCount);
             }
 
             // the layout can change when function branches are replaced with leaves
