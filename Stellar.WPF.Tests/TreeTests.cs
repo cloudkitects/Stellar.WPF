@@ -49,7 +49,7 @@ public class TreeTests
         Assert.Throws<ArgumentNullException>(() => _ = new Tree<object>(arr, 0, 3));
 
         arr = new[] { (object)'1', 2, "III" };
-        
+
         Assert.Throws<ArgumentOutOfRangeException>(() => _ = new Tree<object>(arr, -1, 3));
         Assert.Throws<ArgumentOutOfRangeException>(() => _ = new Tree<object>(arr, 0, 4));
 
@@ -257,7 +257,7 @@ public class TreeTests
     public void InsertThrows(int length, string format)
     {
         var tree = new Tree<char>(GetLongText(length, format));
-        
+
         Tree<char> insert1 = null!;
         IEnumerable<char> insert2 = null!;
 
@@ -304,7 +304,7 @@ public class TreeTests
         var tree = new Tree<char>(text);
 
         var newText = text.TrimEnd('.');
-        
+
         tree.RemoveAt(tree.Length - 1);
 
         Assert.Equal(newText, tree.ToString());
@@ -327,7 +327,7 @@ public class TreeTests
         var finalText = newText + coda;
 
         tree.Append(coda.ToCharArray(), 0, 2);
-        
+
         Assert.Equal(finalText, tree.ToString());
     }
 
@@ -350,12 +350,28 @@ public class TreeTests
     }
 
     [Fact]
+    public void ConcatThrows()
+    {
+        var l = new Tree<char>("Hello,");
+        var r = new Tree<char>("world.");
+        Tree<char> e = null!;
+        Tree<char>[] c = null!;
+
+        Assert.Throws<ArgumentNullException>(() => Tree<char>.Concat(l, e));
+        Assert.Throws<ArgumentNullException>(() => Tree<char>.Concat(e, l));
+        Assert.Throws<ArgumentNullException>(() => Tree<char>.Concat(l, e, r));
+        Assert.Throws<ArgumentNullException>(() => Tree<char>.Concat(c));
+    }
+
+
+    [Fact]
     public void IndexingThrows()
     {
         var text = "Hello, world.";
         var tree = new Tree<char>(text);
 
         Assert.Throws<ArgumentOutOfRangeException>(() => _ = tree[-1]);
+        Assert.Throws<ArgumentOutOfRangeException>(() => tree[-1] = '.');
         Assert.Throws<ArgumentOutOfRangeException>(() => tree[13] = '.');
         Assert.Throws<ArgumentOutOfRangeException>(() => tree[100] = '.');
     }
@@ -383,7 +399,7 @@ public class TreeTests
         Assert.Equal(-1, tree.IndexOf('p'));
         Assert.Equal(-1, tree.LastIndexOf('p'));
         Assert.Equal(10, tree.LastIndexOf('l'));
-        Assert.Equal( 1, tree.LastIndexOf('e'));
+        Assert.Equal(1, tree.LastIndexOf('e'));
         Assert.Equal(12, tree.LastIndexOf('.'));
         Assert.Equal(12, tree.IndexOf('.'));
 
@@ -458,7 +474,7 @@ public class TreeTests
         Assert.Throws<ArgumentOutOfRangeException>(() => tree.VerifyRange(4, 2));
         Assert.Throws<ArgumentOutOfRangeException>(() => tree.VerifyRange(4, -4));
     }
-    
+
     [Fact]
     public void CopiesToArray()
     {
@@ -499,7 +515,7 @@ public class TreeTests
     public void IndexesAnyOf(string any, int expected, int index, int? length)
     {
         var text = GetDummyText();
-        
+
         var tree = new Tree<char>(text);
 
         length ??= tree.Length;
@@ -528,7 +544,7 @@ public class TreeTests
         var tree = new Tree<char>(text);
 
         var output = new StringWriter();
-        
+
         tree.WriteTo(output, 0, tree.Length);
 
         Assert.Equal(segment, output.ToString()[index..(index + length)]);
