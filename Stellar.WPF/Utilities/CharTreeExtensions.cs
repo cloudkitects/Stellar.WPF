@@ -3,7 +3,7 @@ using System.IO;
 
 namespace Stellar.WPF.Utilities;
 
-internal static class TreeExtensions
+internal static class CharTreeExtensions
 {
     /// <summary>
     /// Retrieves the text for a portion of the tree. O(logN + M), where M=<paramref name="length"/>.
@@ -137,7 +137,7 @@ internal static class TreeExtensions
     /// <summary>
     /// Gets the index of the first occurrence of text.
     /// </summary>
-    public static int IndexOf(this Tree<char> tree, string text, int index, int length, StringComparison comparisonType)
+    public static int IndexOf(this Tree<char> tree, string text, int index, int length, StringComparison comparisonType = StringComparison.InvariantCultureIgnoreCase)
     {
         if (tree is null)
         {
@@ -161,7 +161,7 @@ internal static class TreeExtensions
     /// <summary>
     /// Gets the index of the last occurrence of text.
     /// </summary>
-    public static int LastIndexOf(this Tree<char> tree, string text, int index, int length, StringComparison comparisonType)
+    public static int LastIndexOf(this Tree<char> tree, string text, int index, int length, StringComparison comparisonType = StringComparison.InvariantCultureIgnoreCase)
     {
         if (tree is null)
         {

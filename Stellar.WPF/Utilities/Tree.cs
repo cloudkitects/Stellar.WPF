@@ -361,7 +361,7 @@ public sealed class Tree<T> : IList<T>, ICloneable
     }
     #endregion
 
-    #region indexers and finders
+    #region indexing
     /// <summary>
     /// A branch + index in tree composite, used to determine
     /// whether other branches are close and speed up find ops.
@@ -707,42 +707,43 @@ public sealed class Tree<T> : IList<T>, ICloneable
     public IEnumerator<T> GetEnumerator()
     {
         root.Publish();
+
         return Enumerate(root);
     }
 
-    private static IEnumerator<T> Enumerate(Branch<T> node)
+    private static IEnumerator<T> Enumerate(Branch<T> branch)
     {
         Stack<Branch<T>> stack = new();
-        while (node != null)
+
+        while (branch != null)
         {
             // go to leftmost node, pushing the right parts that we'll have to visit later
-            while (node.contents == null)
+            while (branch.contents == null)
             {
-                if (node.height == 0)
+                if (branch.height == 0)
                 {
                     // go down into function nodes
-                    node = node.Create();
+                    branch = branch.Create();
                     continue;
                 }
-                Debug.Assert(node.right != null);
-                stack.Push(node.right);
-                node = node.left!;
+
+                Debug.Assert(branch.right != null);
+                
+                stack.Push(branch.right);
+                
+                branch = branch.left!;
             }
 
             // yield contents of leaf node
-            for (int i = 0; i < node.length; i++)
+            for (int i = 0; i < branch.length; i++)
             {
-                yield return node.contents[i];
+                yield return branch.contents[i];
             }
+            
             // go up to the next node not visited yet
-            if (stack.Count > 0)
-            {
-                node = stack.Pop();
-            }
-            else
-            {
-                node = null!;
-            }
+            branch = stack.Count > 0
+                ? stack.Pop()
+                : null!;
         }
     }
 
@@ -825,11 +826,11 @@ public sealed class Tree<T> : IList<T>, ICloneable
 
             foreach (T element in this)
             {
-                b.Append(b.Length == 0 ? '{' : ", ");
+                b.Append(b.Length == 0 ? "{ " : ", ");
                 b.Append(element!.ToString());
             }
 
-            b.Append('}');
+            b.Append(" }");
 
             return b.ToString();
         }

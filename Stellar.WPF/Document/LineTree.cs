@@ -384,8 +384,10 @@ internal sealed class LineTree : IList<Line>
 
     public Line InsertLineAfter(Line line, int totalLength)
     {
-        Line newLine = new(document);
-        newLine.ExactLength = totalLength;
+        Line newLine = new(document)
+        {
+            ExactLength = totalLength
+        };
 
         InsertAfter(line, newLine);
         return newLine;
@@ -778,7 +780,7 @@ internal sealed class LineTree : IList<Line>
     }
     #endregion
 
-    #region IList implementation
+    #region IList
     Line IList<Line>.this[int index]
     {
         get
@@ -792,18 +794,6 @@ internal sealed class LineTree : IList<Line>
             throw new NotSupportedException();
         }
     }
-
-    int ICollection<Line>.Count
-    {
-        get
-        {
-            document.VerifyAccess();
-
-            return LineCount;
-        }
-    }
-
-    bool ICollection<Line>.IsReadOnly => true;
 
     int IList<Line>.IndexOf(Line item)
     {
@@ -821,7 +811,7 @@ internal sealed class LineTree : IList<Line>
             : -1;
     }
 
-    void IList<Line>.InsertAt(int index, Line item)
+    void IList<Line>.Insert(int index, Line item)
     {
         throw new NotSupportedException();
     }
@@ -830,8 +820,22 @@ internal sealed class LineTree : IList<Line>
     {
         throw new NotSupportedException();
     }
+    #endregion
 
-    void ICollection<Line>.Append(Line item)
+    #region ICollection
+    int ICollection<Line>.Count
+    {
+        get
+        {
+            document.VerifyAccess();
+
+            return LineCount;
+        }
+    }
+
+    bool ICollection<Line>.IsReadOnly => true;
+
+    void ICollection<Line>.Add(Line item)
     {
         throw new NotSupportedException();
     }
@@ -874,7 +878,9 @@ internal sealed class LineTree : IList<Line>
     {
         throw new NotSupportedException();
     }
+    #endregion
 
+    #region IEnumerator
     public IEnumerator<Line> GetEnumerator()
     {
         document.VerifyAccess();

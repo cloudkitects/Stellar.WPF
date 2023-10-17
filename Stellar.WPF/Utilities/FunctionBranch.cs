@@ -12,7 +12,7 @@ namespace Stellar.WPF.Utilities;
 internal sealed class FunctionBranch<T> : Branch<T>
 {
     private Func<Tree<T>> initializer;
-    private Branch<T>? cachedResult;
+    private Branch<T>? branch;
 
     public FunctionBranch(int length, Func<Tree<T>> initializer)
     {
@@ -34,7 +34,7 @@ internal sealed class FunctionBranch<T> : Branch<T>
     {
         lock (this)
         {
-            if (cachedResult is null)
+            if (branch is null)
             {
                 if (initializer is null)
                 {
@@ -55,18 +55,13 @@ internal sealed class FunctionBranch<T> : Branch<T>
                     throw new InvalidOperationException("The tree initializer returned a tree with the wrong length.");
                 }
 
-                // keep going down if result is another function branch
-                if (result.height == 0 && result.contents is null)
-                {
-                    cachedResult = result.Create();
-                }
-                else
-                {
-                    cachedResult = result;
-                }
+                // drill down if result is another function branch
+                branch = result.height == 0 && result.contents is null
+                    ? result.Create()
+                    : result;
             }
 
-            return cachedResult;
+            return branch;
         }
     }
 
@@ -79,7 +74,7 @@ internal sealed class FunctionBranch<T> : Branch<T>
         {
             b.AppendLine(ToString());
 
-            result = cachedResult!;
+            result = branch!;
         }
 
         indent += 2;
