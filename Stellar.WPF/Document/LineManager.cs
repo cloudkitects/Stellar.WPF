@@ -231,6 +231,7 @@ internal sealed class LineManager
     private Line InsertLineAfter(Line line, int length)
     {
         var newLine = lineTree.InsertLineAfter(line, length);
+        
         foreach (ILineTracker lt in lineTrackers)
         {
             lt.AfterInserting(line, newLine);

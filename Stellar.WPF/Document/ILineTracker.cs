@@ -22,12 +22,12 @@ public interface ILineTracker
     /// Action to be called after the line length changes--whether it remains the same--
     /// and multiple times for a single line: a replacement is a removal followed by insertion.
     /// </summary>
-    void ResetLength(Line line, int newTotalLength);
+    void ResetLength(Line line, int newLength);
 
     /// <summary>
     /// Action after inserting a line.
     /// </summary>
-    void AfterInserting(Line insertionPos, Line newLine);
+    void AfterInserting(Line line, Line newLine);
 
     /// <summary>
     /// Must be called after the document changes and is in a consistent
