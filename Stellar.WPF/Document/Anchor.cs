@@ -3,37 +3,10 @@ using System;
 
 namespace Stellar.WPF.Document;
 
-/// <summary>
-/// The TextAnchor class references an offset (a position between two characters).
-/// It automatically updates the offset when text is inserted/removed in front of the anchor.
-/// </summary>
-/// <remarks>
-/// <para>Use the <see cref="Offset"/> property to get the offset from a text anchor.
-/// Use the <see cref="Document.CreateAnchor"/> method to create an anchor from an offset.
-/// </para>
-/// <para>
-/// The document will automatically update all text anchors; and because it uses weak references to do so,
-/// the garbage collector can simply collect the anchor object when you don't need it anymore.
-/// </para>
-/// <para>Moreover, the document is able to efficiently update a large number of anchors without having to look
-/// at each anchor object individually. Updating the offsets of all anchors usually only takes time logarithmic
-/// to the number of anchors. Retrieving the <see cref="Offset"/> property also runs in O(lg N).</para>
-/// <inheritdoc cref="IsDeleted" />
-/// <inheritdoc cref="MovementType" />
-/// <para>If you want to track a segment, you can use the <see cref="AnchorSegment"/> class which
-/// implements <see cref="ISegment"/> using two text anchors.</para>
-/// </remarks>
-/// <example>
-/// Usage:
-/// <code>TextAnchor anchor = document.CreateAnchor(offset);
-/// ChangeMyDocument();
-/// int newOffset = anchor.Offset;
-/// </code>
-/// </example>
-public sealed class Anchor : ITextAnchor
+public sealed class Anchor : IAnchor
 {
     private readonly Document document;
-    internal AnchorNode node;
+    internal AnchorNode? node;
 
     internal Anchor(Document document)
     {
@@ -43,10 +16,7 @@ public sealed class Anchor : ITextAnchor
     /// <summary>
     /// Gets the document owning the anchor.
     /// </summary>
-    public Document Document
-    {
-        get { return document; }
-    }
+    public Document Document => document;
 
     /// <inheritdoc/>
     public AnchorMovementType MovementType { get; set; }
@@ -66,13 +36,13 @@ public sealed class Anchor : ITextAnchor
     }
 
     /// <inheritdoc/>
-    public event EventHandler Deleted;
+    public event EventHandler? Deleted;
 
     internal void OnDeleted(EventQueue eventQueue)
     {
         node = null;
 
-        eventQueue.Enqueue(Deleted, this, EventArgs.Empty);
+        eventQueue.Enqueue(Deleted!, this, EventArgs.Empty);
     }
 
     /// <summary>
@@ -116,13 +86,7 @@ public sealed class Anchor : ITextAnchor
     /// Gets the line number of the anchor.
     /// </summary>
     /// <exception cref="InvalidOperationException">Thrown when trying to get the Offset from a deleted anchor.</exception>
-    public int Line
-    {
-        get
-        {
-            return document.GetLineByOffset(Offset).LineNumber;
-        }
-    }
+    public int Line => document.GetLineByOffset(Offset).Number;
 
     /// <summary>
     /// Gets the column number of this anchor.
@@ -141,13 +105,7 @@ public sealed class Anchor : ITextAnchor
     /// Gets the text location of this anchor.
     /// </summary>
     /// <exception cref="InvalidOperationException">Thrown when trying to get the Offset from a deleted anchor.</exception>
-    public Location Location
-    {
-        get
-        {
-            return document.GetLocation(Offset);
-        }
-    }
+    public Location Location => document.GetLocation(Offset);
 
     /// <inheritdoc/>
     public override string ToString()

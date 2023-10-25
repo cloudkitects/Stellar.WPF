@@ -5,7 +5,6 @@ using System.Linq;
 using System.Text.RegularExpressions;
 
 using Stellar.WPF.Document;
-using Stellar.WPF.Utilities;
 
 using SpanStack = Stellar.WPF.Utilities.ImmutableStack<Stellar.WPF.Highlighting.Span>;
 

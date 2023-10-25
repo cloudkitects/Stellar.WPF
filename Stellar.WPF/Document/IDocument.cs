@@ -157,10 +157,10 @@ public interface IDocument : ITextSource, IServiceProvider
     IDisposable OpenUndoGroup();
 
     /// <summary>
-    /// Creates a new <see cref="ITextAnchor"/> at the specified offset.
+    /// Creates a new <see cref="IAnchor"/> at the specified offset.
     /// </summary>
-    /// <inheritdoc cref="ITextAnchor" select="remarks|example"/>
-    ITextAnchor CreateAnchor(int offset);
+    /// <inheritdoc cref="IAnchor" select="remarks|example"/>
+    IAnchor CreateAnchor(int offset);
 
     /// <summary>
     /// Gets the name of the file the document is stored in.

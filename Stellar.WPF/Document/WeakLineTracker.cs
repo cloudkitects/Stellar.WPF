@@ -7,18 +7,23 @@ namespace Stellar.WPF.Document;
 /// </summary>
 public sealed class WeakLineTracker : ILineTracker
 {
+    #region fields and props
     private Document? document;
     private readonly WeakReference tracker;
+    #endregion
 
+    #region constructors
     private WeakLineTracker(Document document, ILineTracker tracker)
     {
         this.document = document;
         this.tracker = new WeakReference(tracker);
     }
+    #endregion
 
+    #region methods
     /// <summary>
     /// Registers the <paramref name="tracker"/> as line tracker for the <paramref name="document"/>.
-    /// A weak reference to the target tracker will be used, and the WeakLineTracker will deregister itself
+    /// A weak reference to the target tracker will be used, and the WeakLineTracker will unregister itself
     /// when the target tracker is garbage collected.
     /// </summary>
     public static WeakLineTracker Register(Document document, ILineTracker tracker)
@@ -33,7 +38,7 @@ public sealed class WeakLineTracker : ILineTracker
     }
 
     /// <summary>
-    /// Deregisters the weak line tracker.
+    /// Unregister this weak line tracker from the document.
     /// </summary>
     public void Unregister()
     {
@@ -43,7 +48,9 @@ public sealed class WeakLineTracker : ILineTracker
             document = null;
         }
     }
+    #endregion
 
+    #region ILineTracker
     void ILineTracker.BeforeRemoving(Line line)
     {
         if (tracker.Target is ILineTracker _tracker)
@@ -103,4 +110,5 @@ public sealed class WeakLineTracker : ILineTracker
             Unregister();
         }
     }
+    #endregion
 }

@@ -3,28 +3,26 @@
 namespace Stellar.WPF.Document;
 
 /// <summary>
-/// A text anchor references an offset (a position between two characters in a text) that is
+/// An anchor maintains a reference to an offset (a position between two characters in a text) that is
 /// updated when text is inserted/removed in front of it.
 /// </summary>
 /// <remarks>
-/// <para>Use the <see cref="ITextAnchor.Offset"/> property to get the offset from a text anchor.
+/// <para>Use the <see cref="IAnchor.Offset"/> property to get the offset from an anchor.
 /// Use the <see cref="IDocument.CreateAnchor"/> method to create an anchor from an offset.
 /// </para>
 /// <para>
-/// The document automatically updates all text anchors using weak references so that the
-/// garbage collector eats the anchors when they're no longer needed.
+/// The document can read or update all anchors in batch in O(logN), and uses weak references
+/// so that the garbage collector eats them away when no longer needed.
 /// </para>
-/// <para>The document also retrieves and updates a large number of anchors without looking
-/// at each individually, taking O(logN).</para>
 /// </remarks>
 /// <example>
 /// Usage:
-/// <code>TextAnchor anchor = document.CreateAnchor(offset);
+/// <code>var anchor = document.CreateAnchor(offset);
 /// ChangeMyDocument();
-/// int newOffset = anchor.Offset;
+/// var newOffset = anchor.Offset;
 /// </code>
 /// </example>
-public interface ITextAnchor
+public interface IAnchor
 {
     /// <summary>
     /// The text location of this anchor.

@@ -82,10 +82,10 @@ public interface IHighlighter : IDisposable
     /// <summary>
     /// Retrieves the style with the specified name, or null if none matching the name is found.
     /// </summary>
-    Style GetNamedStyle(string name);
+    Style GetStyle(string name);
 
     /// <summary>
-    /// Gets the default text color.
+    /// The default text style.
     /// </summary>
-    Style Default { get; }
+    Style DefaultStyle { get; }
 }

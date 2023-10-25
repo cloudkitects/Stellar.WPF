@@ -20,7 +20,7 @@ public interface ILine : ISegment
     /// Gets the number of this line.
     /// The first line has the number 1.
     /// </summary>
-    int LineNumber { get; }
+    int Number { get; }
 
     /// <summary>
     /// Gets the previous line. Returns null if this is the first line in the document.

@@ -804,7 +804,7 @@ internal sealed class LineTree : IList<Line>
             return -1;
         }
 
-        var index = item.LineNumber - 1;
+        var index = item.Number - 1;
 
         return index < LineCount && LineAt(index) == item
             ? index

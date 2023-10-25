@@ -33,7 +33,8 @@ public sealed partial class Line : ILine
     internal Line(Document document)
     {
 #if DEBUG
-        Debug.Assert(document != null);
+        Debug.Assert(document is not null);
+        
         this.document = document;
 #endif
     }
@@ -51,7 +52,7 @@ public sealed partial class Line : ILine
     /// <summary>
     /// Relative lines.
     /// </summary>
-    internal Line left, right, parent;
+    internal Line? left, right, parent;
 
     internal bool color;
 
@@ -136,7 +137,7 @@ public sealed partial class Line : ILine
     /// The O(logN) number of this line.
     /// </summary>
     /// <exception cref="InvalidOperationException">The line was deleted.</exception>
-    public int LineNumber => !IsDeleted
+    public int Number => !IsDeleted
                 ? LineTree.IndexOf(this) + 1
                 : throw new InvalidOperationException();
 
@@ -288,11 +289,8 @@ public sealed partial class Line : ILine
     public override string ToString()
     {
         return IsDeleted
-            ? "[DocumentLine deleted]"
-            : string.Format(
-                CultureInfo.InvariantCulture,
-                "[DocumentLine Number={0} Offset={1} Length={2}]",
-                LineNumber, Offset, Length);
+            ? $"[DocumentLine <deleted>]"
+            : $"[DocumentLine Number={Number} Offset={Offset} Length={Length}]";
     }
     #endregion
 }

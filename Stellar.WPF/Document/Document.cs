@@ -1017,7 +1017,7 @@ public sealed class Document : IDocument, INotifyPropertyChanged
     public Location GetLocation(int offset)
     {
         Line line = GetLineByOffset(offset);
-        return new Location(line.LineNumber, offset - line.Offset + 1);
+        return new Location(line.Number, offset - line.Offset + 1);
     }
     #endregion
 
@@ -1082,7 +1082,7 @@ public sealed class Document : IDocument, INotifyPropertyChanged
         return anchorTree.CreateAnchor(offset);
     }
 
-    ITextAnchor IDocument.CreateAnchor(int offset) => CreateAnchor(offset);
+    IAnchor IDocument.CreateAnchor(int offset) => CreateAnchor(offset);
     #endregion
 
     #region LineCount

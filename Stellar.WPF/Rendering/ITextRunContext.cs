@@ -22,7 +22,7 @@ public interface ITextRunContext
     /// <summary>
     /// The visual line under construction.
     /// </summary>
-    //VisualLine VisualLine { get; }
+    VisualLine VisualLine { get; }
 
     /// <summary>
     /// Gets the global text run properties.

@@ -1,11 +1,18 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
+using System.Diagnostics;
+using System.Windows;
 
 namespace Stellar.WPF.Utilities
 {
     internal static class FreezableExtensions
     {
+        public static void WarnIfNotFrozen(this Freezable value)
+        {
+            Debug.WriteLineIf(!value.IsFrozen, $"{value} {value.GetType().Name} is not frozen and can impact performance.");
+        }
+
         public static void ThrowIfFrozen(this IFreezable freezable)
         {
             if (freezable.IsFrozen)
