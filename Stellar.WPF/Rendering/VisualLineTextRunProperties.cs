@@ -14,7 +14,7 @@ namespace Stellar.WPF.Rendering;
 /// A <see cref="TextRunProperties"/> implementation that allows changing the properties 
 /// and is usually assigned to a single <see cref="VisualLineElement"/>.
 /// </summary>
-public class VisualLineElementTextRunProperties : TextRunProperties, ICloneable
+public class VisualLineTextRunProperties : TextRunProperties, ICloneable
 {
     #region fields
     private BaselineAlignment baselineAlignment;
@@ -37,7 +37,7 @@ public class VisualLineElementTextRunProperties : TextRunProperties, ICloneable
     /// For the <see cref="TextDecorations"/> and <see cref="TextEffects"/> collections, deep copies
     /// are created if those collections are not frozen.
     /// </summary>
-    public VisualLineElementTextRunProperties(TextRunProperties textRunProperties)
+    public VisualLineTextRunProperties(TextRunProperties textRunProperties)
     {
         if (textRunProperties is null)
         {
@@ -95,7 +95,7 @@ public class VisualLineElementTextRunProperties : TextRunProperties, ICloneable
     /// <inheritdoc/>
     /// <remarks>
     /// The value may be null, frozen or unfrozen. If the latter, it's safe to
-    /// assume the instance is only used by this <see cref="VisualLineElementTextRunProperties"/>
+    /// assume the instance is only used by this <see cref="VisualLineTextRunProperties"/>
     /// instance and in turn safe to add decorations to it.
     /// </remarks>
     public override TextDecorationCollection TextDecorations => decorations!;
@@ -103,7 +103,7 @@ public class VisualLineElementTextRunProperties : TextRunProperties, ICloneable
     /// <inheritdoc/>
     /// <remarks>
     /// The value may be null, frozen or unfrozen. If the latter, it's safe to
-    /// assume the instance is only used by this <see cref="VisualLineElementTextRunProperties"/>
+    /// assume the instance is only used by this <see cref="VisualLineTextRunProperties"/>
     /// instance and in turn safe to add effects to it.
     /// </remarks>
     public override TextEffectCollection TextEffects => effects!;
@@ -220,9 +220,9 @@ public class VisualLineElementTextRunProperties : TextRunProperties, ICloneable
     /// <summary>
     /// Creates a copy of this instance.
     /// </summary>
-    public virtual VisualLineElementTextRunProperties Clone()
+    public virtual VisualLineTextRunProperties Clone()
     {
-        return new VisualLineElementTextRunProperties(this);
+        return new VisualLineTextRunProperties(this);
     }
 
     object ICloneable.Clone()

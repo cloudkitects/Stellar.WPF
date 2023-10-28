@@ -35,12 +35,12 @@ public abstract class VisualLineElement
 
     /// <summary>
     /// Gets the text run properties.
-    /// A unique <see cref="VisualLineElementTextRunProperties"/> instance is used for each
+    /// A unique <see cref="VisualLineTextRunProperties"/> instance is used for each
     /// <see cref="VisualLineElement"/>; colorizing code may assume that modifying the
-    /// <see cref="VisualLineElementTextRunProperties"/> will affect only this
+    /// <see cref="VisualLineTextRunProperties"/> will affect only this
     /// <see cref="VisualLineElement"/>.
     /// </summary>
-    public VisualLineElementTextRunProperties? TextRunProperties { get; private set; }
+    public VisualLineTextRunProperties? TextRunProperties { get; private set; }
 
     /// <summary>
     /// Gets/sets the brush used for the background of this <see cref="VisualLineElement" />.
@@ -73,7 +73,7 @@ public abstract class VisualLineElement
         DocumentLength = documentLength;
     }
 
-    internal void SetTextRunProperties(VisualLineElementTextRunProperties properties)
+    internal void SetTextRunProperties(VisualLineTextRunProperties properties)
     {
         TextRunProperties = properties;
     }

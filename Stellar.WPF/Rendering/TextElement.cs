@@ -4,14 +4,13 @@ using System.Windows.Documents;
 using System.Windows.Media.TextFormatting;
 
 using Stellar.WPF.Document;
-using Stellar.WPF.Utilities;
 
 namespace Stellar.WPF.Rendering;
 
 /// <summary>
 /// A VisualLineElement derivative representing a piece of text.
 /// </summary>
-public class VisualLineText : VisualLineElement
+public class TextElement : VisualLineElement
 {
     readonly VisualLine parentVisualLine;
 
@@ -28,7 +27,7 @@ public class VisualLineText : VisualLineElement
     /// It uses the <see cref="ITextRunConstructionContext.VisualLine"/> and its
     /// <see cref="VisualLineElement.RelativeTextOffset"/> to find the actual text string.
     /// </summary>
-    public VisualLineText(VisualLine parentVisualLine, int length) : base(length, length)
+    public TextElement(VisualLine parentVisualLine, int length) : base(length, length)
 	{
         this.parentVisualLine = parentVisualLine ?? throw new ArgumentNullException(nameof(parentVisualLine));
 	}
@@ -37,7 +36,7 @@ public class VisualLineText : VisualLineElement
     /// Override this method to control the type of new VisualLineText instances when
     /// the visual line is split due to syntax highlighting.
     /// </summary>
-    protected virtual VisualLineText CreateInstance(int length) => new VisualLineText(parentVisualLine, length);
+    protected virtual TextElement CreateInstance(int length) => new TextElement(parentVisualLine, length);
 
     /// <inheritdoc/>
     public override TextRun CreateTextRun(int startVisualColumn, ITextRunContext context)
@@ -115,7 +114,7 @@ public class VisualLineText : VisualLineElement
     public override int GetNextCaretPosition(int visualColumn, LogicalDirection direction, CaretPositioningMode mode)
 	{
 		var textOffset = parentVisualLine.StartOffset + RelativeTextOffset;
-		var pos = TextUtilities.GetNextCaretPosition(parentVisualLine.Document, textOffset + visualColumn - VisualColumn, direction, mode);
+		var pos = parentVisualLine.Document.GetNextCaretPosition(textOffset + visualColumn - VisualColumn, direction, mode);
 
         return pos < textOffset || textOffset + DocumentLength < pos
             ? -1

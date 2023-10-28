@@ -5,8 +5,7 @@ using System.Globalization;
 namespace Stellar.WPF.Document;
 
 /// <summary>
-/// A line/column position.
-/// Text editor lines/columns are counted started from one.
+/// A 1-based line/column position.
 /// </summary>
 /// <remarks>
 /// The document provides the methods <see cref="IDocument.GetLocation"/> and

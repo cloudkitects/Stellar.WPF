@@ -5,7 +5,7 @@ namespace Stellar.WPF.Rendering;
 /// <summary>
 /// Abstract base class for generators that produce new visual line elements.
 /// </summary>
-public abstract class VisualLineElementGenerator
+public abstract class VisualLineGenerator
 {
 	/// <summary>
 	/// Gets the text run construction context.
@@ -45,7 +45,7 @@ public abstract class VisualLineElementGenerator
 	/// </summary>
 	/// <remarks>
 	/// Avoid signalling interest and then building no element by returning null - doing so
-	/// causes the generated <see cref="VisualLineText"/> elements to be unnecessarily split
+	/// causes the generated <see cref="TextElement"/> elements to be unnecessarily split
 	/// at the position where you signalled interest.
 	/// </remarks>
 	public abstract VisualLineElement ConstructElement(int offset);

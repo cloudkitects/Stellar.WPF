@@ -17,7 +17,7 @@ public interface ITextRunContext
     /// <summary>
     /// The text view from which to create a text run.
     /// </summary>
-    //TextView TextView { get; }
+    TextView TextView { get; }
 
     /// <summary>
     /// The visual line under construction.

@@ -5,7 +5,6 @@ using System.Diagnostics;
 using System.Linq;
 using System.Windows;
 using System.Windows.Documents;
-using System.Windows.Media;
 using System.Windows.Media.TextFormatting;
 
 using Stellar.WPF.Document;
@@ -119,7 +118,7 @@ public sealed class VisualLine
         FirstLine = firstLine;
     }
 
-    internal void ConstructVisualElements(ITextRunContext context, VisualLineElementGenerator[] generators)
+    internal void ConstructVisualElements(ITextRunContext context, VisualLineGenerator[] generators)
     {
         Debug.Assert(phase == LifetimePhase.Generating);
 
@@ -141,7 +140,7 @@ public sealed class VisualLine
 
         foreach (var element in elements)
         {
-            element.SetTextRunProperties(new VisualLineElementTextRunProperties(globalTextRunProperties));
+            element.SetTextRunProperties(new VisualLineTextRunProperties(globalTextRunProperties));
         }
 
         Elements = elements.AsReadOnly();
@@ -151,7 +150,7 @@ public sealed class VisualLine
         phase = LifetimePhase.Transforming;
     }
 
-    private void PerformVisualElementConstruction(VisualLineElementGenerator[] generators)
+    private void PerformVisualElementConstruction(VisualLineGenerator[] generators)
     {
         var document = Document;
         var offset = FirstLine.Offset;
@@ -190,7 +189,7 @@ public sealed class VisualLine
             {
                 var textPieceLength = textPieceEndOffset - offset;
 
-                elements.Add(new VisualLineText(this, textPieceLength));
+                elements.Add(new TextElement(this, textPieceLength));
 
                 offset = textPieceEndOffset;
             }
@@ -264,7 +263,7 @@ public sealed class VisualLine
         {
             transformer.Transform(context, elements);
         }
-        
+
         // WPF requires that either all or none of the typography properties to be set
         foreach (var element in elements.Where(e => e.TextRunProperties is not null && e.TextRunProperties.TypographyProperties is null))
         {
@@ -281,10 +280,7 @@ public sealed class VisualLine
     /// <remarks>
     /// This method may only be called by line transformers.
     /// </remarks>
-    public void ReplaceElement(int elementIndex, params VisualLineElement[] newElements)
-    {
-        ReplaceElement(elementIndex, 1, newElements);
-    }
+    public void ReplaceElement(int elementIndex, params VisualLineElement[] newElements) => ReplaceElement(elementIndex, 1, newElements);
 
     /// <summary>
     /// Replaces <paramref name="count"/> elements starting at <paramref name="elementIndex"/> with the specified elements.
@@ -328,9 +324,9 @@ public sealed class VisualLine
     internal void SetTextLines(List<TextLine> textLines)
     {
         this.textLines = textLines.AsReadOnly();
-        
+
         Height = 0;
-        
+
         foreach (var line in textLines)
         {
             Height += line.Height;
@@ -342,7 +338,11 @@ public sealed class VisualLine
     /// </summary>
     public int GetVisualColumn(int relativeTextOffset)
     {
-        ThrowUtil.CheckNotNegative(relativeTextOffset, "relativeTextOffset");
+        if (relativeTextOffset < 0)
+        {
+            throw new ArgumentOutOfRangeException(nameof(relativeTextOffset), $"{relativeTextOffset} < 0");
+        }
+        
         foreach (VisualLineElement element in elements)
         {
             if (element.RelativeTextOffset <= relativeTextOffset
@@ -357,16 +357,20 @@ public sealed class VisualLine
     /// <summary>
     /// Gets the document offset (relative to the first line start) from a visual column.
     /// </summary>
-    public int GetRelativeOffset(int visualColumn)
+    public int GetRelativeOffset(int column)
     {
-        ThrowUtil.CheckNotNegative(visualColumn, "visualColumn");
+        if (column < 0)
+        {
+            throw new ArgumentOutOfRangeException(nameof(column), $"{column} < 0");
+        }
+
         int documentLength = 0;
         foreach (VisualLineElement element in elements)
         {
-            if (element.VisualColumn <= visualColumn
-                && element.VisualColumn + element.VisualLength > visualColumn)
+            if (element.VisualColumn <= column
+                && element.VisualColumn + element.VisualLength > column)
             {
-                return element.GetRelativeOffset(visualColumn);
+                return element.GetRelativeOffset(column);
             }
             documentLength += element.DocumentLength;
         }
@@ -376,10 +380,7 @@ public sealed class VisualLine
     /// <summary>
     /// Gets the text line containing the specified visual column.
     /// </summary>
-    public TextLine GetTextLine(int visualColumn)
-    {
-        return GetTextLine(visualColumn, false);
-    }
+    public TextLine GetTextLine(int visualColumn) => GetTextLine(visualColumn, false);
 
     /// <summary>
     /// Gets the text line containing the specified visual column.
@@ -388,7 +389,7 @@ public sealed class VisualLine
     {
         if (visualColumn < 0)
         {
-            throw new ArgumentOutOfRangeException("visualColumn");
+            throw new ArgumentOutOfRangeException(nameof(visualColumn));
         }
 
         if (visualColumn >= VisualLengthWithEndOfLineMarker)
@@ -413,43 +414,36 @@ public sealed class VisualLine
     /// <summary>
     /// Gets the visual top from the specified text line.
     /// </summary>
-    /// <returns>Distance in device-independent pixels
-    /// from the top of the document to the top of the specified text line.</returns>
-    public double GetTextLineVisualYPosition(TextLine textLine, VisualYPosition yPositionMode)
+    /// <returns>Distance in device-independent pixels (DIP)
+    /// from the top of the document to the top of the specified line.</returns>
+    public double GetTextLineVisualYPosition(TextLine textLine, VisualYPosition position)
     {
         if (textLine == null)
         {
-            throw new ArgumentNullException("textLine");
+            throw new ArgumentNullException(nameof(textLine));
         }
 
-        double pos = VisualTop;
-        foreach (TextLine tl in TextLines)
+        var pos = VisualTop;
+
+        foreach (TextLine line in TextLines)
         {
-            if (tl == textLine)
+            if (line == textLine)
             {
-                switch (yPositionMode)
+                return position switch
                 {
-                    case VisualYPosition.LineTop:
-                        return pos;
-                    case VisualYPosition.LineMiddle:
-                        return pos + tl.Height / 2;
-                    case VisualYPosition.LineBottom:
-                        return pos + tl.Height;
-                    case VisualYPosition.TextTop:
-                        return pos + tl.Baseline - textView.DefaultBaseline;
-                    case VisualYPosition.TextBottom:
-                        return pos + tl.Baseline - textView.DefaultBaseline + textView.DefaultLineHeight;
-                    case VisualYPosition.TextMiddle:
-                        return pos + tl.Baseline - textView.DefaultBaseline + textView.DefaultLineHeight / 2;
-                    case VisualYPosition.Baseline:
-                        return pos + tl.Baseline;
-                    default:
-                        throw new ArgumentException("Invalid yPositionMode:" + yPositionMode);
-                }
+                    VisualYPosition.Top => pos,
+                    VisualYPosition.Middle => pos + line.Height / 2,
+                    VisualYPosition.Bottom => pos + line.Height,
+                    VisualYPosition.TextTop => pos + line.Baseline - textView.DefaultBaseline,
+                    VisualYPosition.TextBottom => pos + line.Baseline - textView.DefaultBaseline + textView.DefaultLineHeight,
+                    VisualYPosition.TextMiddle => pos + line.Baseline - textView.DefaultBaseline + textView.DefaultLineHeight / 2,
+                    VisualYPosition.Baseline => pos + line.Baseline,
+                    _ => throw new ArgumentException($"Invalid {nameof(position)} value: {position}")
+                };
             }
             else
             {
-                pos += tl.Height;
+                pos += line.Height;
             }
         }
         throw new ArgumentException("textLine is not a line in this VisualLine");
@@ -458,44 +452,47 @@ public sealed class VisualLine
     /// <summary>
     /// Gets the start visual column from the specified text line.
     /// </summary>
-    public int GetTextLineVisualStartColumn(TextLine textLine)
+    public int GetTextLineStartColumn(TextLine textLine)
     {
         if (!TextLines.Contains(textLine))
         {
             throw new ArgumentException("textLine is not a line in this VisualLine");
         }
 
-        int col = 0;
-        foreach (TextLine tl in TextLines)
+        var col = 0;
+
+        foreach (var line in TextLines)
         {
-            if (tl == textLine)
+            if (line == textLine)
             {
                 break;
             }
-            else
-            {
-                col += tl.Length;
-            }
+
+            col += line.Length;
         }
+
         return col;
     }
 
     /// <summary>
-    /// Gets a TextLine by the visual position.
+    /// Gets a TextLine by the visual Y position.
     /// </summary>
     public TextLine GetTextLineByVisualYPosition(double visualTop)
     {
         const double epsilon = 0.0001;
-        double pos = VisualTop;
-        foreach (TextLine tl in TextLines)
+        var pos = VisualTop;
+
+        foreach (var line in TextLines)
         {
-            pos += tl.Height;
+            pos += line.Height;
+
             if (visualTop + epsilon < pos)
             {
-                return tl;
+                return line;
             }
         }
-        return TextLines[TextLines.Count - 1];
+
+        return TextLines[^1];
     }
 
     /// <summary>
@@ -503,39 +500,40 @@ public sealed class VisualLine
     /// </summary>
     /// <returns>Position in device-independent pixels
     /// relative to the top left of the document.</returns>
-    public Point GetVisualPosition(int visualColumn, VisualYPosition yPositionMode)
+    public Point GetVisualPosition(int column, VisualYPosition position)
     {
-        TextLine textLine = GetTextLine(visualColumn);
-        double xPos = GetTextLineVisualXPosition(textLine, visualColumn);
-        double yPos = GetTextLineVisualYPosition(textLine, yPositionMode);
-        return new Point(xPos, yPos);
+        var textLine = GetTextLine(column);
+
+        var x = GetTextLineVisualXPosition(textLine, column);
+        var y = GetTextLineVisualYPosition(textLine, position);
+
+        return new Point(x, y);
     }
 
-    internal Point GetVisualPosition(int visualColumn, bool isAtEndOfLine, VisualYPosition yPositionMode)
+    internal Point GetVisualPosition(int column, bool isAtEndOfLine, VisualYPosition position)
     {
-        TextLine textLine = GetTextLine(visualColumn, isAtEndOfLine);
-        double xPos = GetTextLineVisualXPosition(textLine, visualColumn);
-        double yPos = GetTextLineVisualYPosition(textLine, yPositionMode);
-        return new Point(xPos, yPos);
+        var textLine = GetTextLine(column, isAtEndOfLine);
+
+        var x = GetTextLineVisualXPosition(textLine, column);
+        var y = GetTextLineVisualYPosition(textLine, position);
+
+        return new Point(x, y);
     }
 
     /// <summary>
     /// Gets the distance to the left border of the text area of the specified visual column.
     /// The visual column must belong to the specified text line.
     /// </summary>
-    public double GetTextLineVisualXPosition(TextLine textLine, int visualColumn)
+    public double GetTextLineVisualXPosition(TextLine textLine, int column)
     {
-        if (textLine == null)
+        var xPos = (textLine ?? throw new ArgumentNullException(nameof(textLine)))
+            .GetDistanceFromCharacterHit(new CharacterHit(Math.Min(column, VisualLengthWithEndOfLineMarker), 0));
+
+        if (column > VisualLengthWithEndOfLineMarker)
         {
-            throw new ArgumentNullException("textLine");
+            xPos += (column - VisualLengthWithEndOfLineMarker) * textView.WideSpaceWidth;
         }
 
-        double xPos = textLine.GetDistanceFromCharacterHit(
-            new CharacterHit(Math.Min(visualColumn, VisualLengthWithEndOfLineMarker), 0));
-        if (visualColumn > VisualLengthWithEndOfLineMarker)
-        {
-            xPos += (visualColumn - VisualLengthWithEndOfLineMarker) * textView.WideSpaceWidth;
-        }
         return xPos;
     }
 
@@ -543,26 +541,23 @@ public sealed class VisualLine
     /// Gets the visual column from a document position (relative to top left of the document).
     /// If the user clicks between two visual columns, rounds to the nearest column.
     /// </summary>
-    public int GetVisualColumn(Point point)
-    {
-        return GetVisualColumn(point, textView.Options.EnableVirtualSpace);
-    }
+    public int GetVisualColumn(Point point) => GetVisualColumn(point, textView.Options.EnableVirtualSpace);
 
     /// <summary>
     /// Gets the visual column from a document position (relative to top left of the document).
     /// If the user clicks between two visual columns, rounds to the nearest column.
     /// </summary>
-    public int GetVisualColumn(Point point, bool allowVirtualSpace)
-    {
-        return GetVisualColumn(GetTextLineByVisualYPosition(point.Y), point.X, allowVirtualSpace);
-    }
+    public int GetVisualColumn(Point point, bool allowVirtualSpace) => GetVisualColumn(GetTextLineByVisualYPosition(point.Y), point.X, allowVirtualSpace);
 
     internal int GetVisualColumn(Point point, bool allowVirtualSpace, out bool isAtEndOfLine)
     {
         var textLine = GetTextLineByVisualYPosition(point.Y);
-        int vc = GetVisualColumn(textLine, point.X, allowVirtualSpace);
-        isAtEndOfLine = (vc >= GetTextLineVisualStartColumn(textLine) + textLine.Length);
-        return vc;
+
+        var column = GetVisualColumn(textLine, point.X, allowVirtualSpace);
+
+        isAtEndOfLine = (column >= GetTextLineStartColumn(textLine) + textLine.Length);
+
+        return column;
     }
 
     /// <summary>
@@ -573,50 +568,47 @@ public sealed class VisualLine
     {
         if (xPos > textLine.WidthIncludingTrailingWhitespace)
         {
-            if (allowVirtualSpace && textLine == TextLines[TextLines.Count - 1])
+            if (allowVirtualSpace && textLine == TextLines[^1])
             {
-                int virtualX = (int)Math.Round((xPos - textLine.WidthIncludingTrailingWhitespace) / textView.WideSpaceWidth, MidpointRounding.AwayFromZero);
+                var virtualX = (int)Math.Round((xPos - textLine.WidthIncludingTrailingWhitespace) / textView.WideSpaceWidth, MidpointRounding.AwayFromZero);
+
                 return VisualLengthWithEndOfLineMarker + virtualX;
             }
         }
-        CharacterHit ch = textLine.GetCharacterHitFromDistance(xPos);
-        return ch.FirstCharacterIndex + ch.TrailingLength;
+        var hit = textLine.GetCharacterHitFromDistance(xPos);
+
+        return hit.FirstCharacterIndex + hit.TrailingLength;
     }
 
     /// <summary>
     /// Validates the visual column and returns the correct one.
     /// </summary>
-    public int ValidateVisualColumn(TextViewPosition position, bool allowVirtualSpace)
-    {
-        return ValidateVisualColumn(Document.GetOffset(position.Location), position.VisualColumn, allowVirtualSpace);
-    }
+    public int ValidateVisualColumn(TextViewPosition position, bool allowVirtualSpace) => ValidateVisualColumn(Document.GetOffset(position.Location), position.VisualColumn, allowVirtualSpace);
 
     /// <summary>
     /// Validates the visual column and returns the correct one.
     /// </summary>
     public int ValidateVisualColumn(int offset, int visualColumn, bool allowVirtualSpace)
     {
-        int firstDocumentLineOffset = FirstLine.Offset;
+        var firstLineOffset = FirstLine.Offset;
+
         if (visualColumn < 0)
         {
-            return GetVisualColumn(offset - firstDocumentLineOffset);
+            return GetVisualColumn(offset - firstLineOffset);
         }
-        else
+
+        var offsetFromVisualColumn = GetRelativeOffset(visualColumn) + firstLineOffset;
+        
+        if (offsetFromVisualColumn != offset)
         {
-            int offsetFromVisualColumn = GetRelativeOffset(visualColumn);
-            offsetFromVisualColumn += firstDocumentLineOffset;
-            if (offsetFromVisualColumn != offset)
-            {
-                return GetVisualColumn(offset - firstDocumentLineOffset);
-            }
-            else
-            {
-                if (visualColumn > VisualLength && !allowVirtualSpace)
-                {
-                    return VisualLength;
-                }
-            }
+            return GetVisualColumn(offset - firstLineOffset);
         }
+        
+        if (visualColumn > VisualLength && !allowVirtualSpace)
+        {
+            return VisualLength;
+        }
+
         return visualColumn;
     }
 
@@ -624,47 +616,43 @@ public sealed class VisualLine
     /// Gets the visual column from a document position (relative to top left of the document).
     /// If the user clicks between two visual columns, returns the first of those columns.
     /// </summary>
-    public int GetVisualColumnFloor(Point point)
-    {
-        return GetVisualColumnFloor(point, textView.Options.EnableVirtualSpace);
-    }
+    public int GetVisualColumnFloor(Point point) => GetVisualColumnFloor(point, textView.Options.EnableVirtualSpace);
 
     /// <summary>
     /// Gets the visual column from a document position (relative to top left of the document).
     /// If the user clicks between two visual columns, returns the first of those columns.
     /// </summary>
-    public int GetVisualColumnFloor(Point point, bool allowVirtualSpace)
-    {
-        bool tmp;
-        return GetVisualColumnFloor(point, allowVirtualSpace, out tmp);
-    }
+    public int GetVisualColumnFloor(Point point, bool allowVirtualSpace) => GetVisualColumnFloor(point, allowVirtualSpace, out _);
 
     internal int GetVisualColumnFloor(Point point, bool allowVirtualSpace, out bool isAtEndOfLine)
     {
-        TextLine textLine = GetTextLineByVisualYPosition(point.Y);
+        var textLine = GetTextLineByVisualYPosition(point.Y);
+
         if (point.X > textLine.WidthIncludingTrailingWhitespace)
         {
             isAtEndOfLine = true;
+            
             if (allowVirtualSpace && textLine == TextLines[TextLines.Count - 1])
             {
                 // clicking virtual space in the last line
-                int virtualX = (int)((point.X - textLine.WidthIncludingTrailingWhitespace) / textView.WideSpaceWidth);
+                var virtualX = (int)((point.X - textLine.WidthIncludingTrailingWhitespace) / textView.WideSpaceWidth);
+
                 return VisualLengthWithEndOfLineMarker + virtualX;
             }
-            else
-            {
-                // GetCharacterHitFromDistance returns a hit with FirstCharacterIndex=last character in line
-                // and TrailingLength=1 when clicking behind the line, so the floor function needs to handle this case
-                // specially and return the line's end column instead.
-                return GetTextLineVisualStartColumn(textLine) + textLine.Length;
-            }
+            
+            // GetCharacterHitFromDistance returns a hit with FirstCharacterIndex=last character in line
+            // and TrailingLength=1 when clicking behind the line, so the floor function needs to handle this case
+            // specially and return the line's end column instead.
+            return GetTextLineStartColumn(textLine) + textLine.Length;
         }
         else
         {
             isAtEndOfLine = false;
         }
-        CharacterHit ch = textLine.GetCharacterHitFromDistance(point.X);
-        return ch.FirstCharacterIndex;
+        
+        var hit = textLine.GetCharacterHitFromDistance(point.X);
+
+        return hit.FirstCharacterIndex;
     }
 
     /// <summary>
@@ -672,7 +660,8 @@ public sealed class VisualLine
     /// </summary>
     public TextViewPosition GetTextViewPosition(int visualColumn)
     {
-        int documentOffset = GetRelativeOffset(visualColumn) + FirstLine.Offset;
+        var documentOffset = GetRelativeOffset(visualColumn) + FirstLine.Offset;
+
         return new TextViewPosition(Document.GetLocation(documentOffset), visualColumn);
     }
 
@@ -685,12 +674,13 @@ public sealed class VisualLine
     /// <param name="allowVirtualSpace">Controls whether positions in virtual space may be returned.</param>
     public TextViewPosition GetTextViewPosition(Point visualPosition, bool allowVirtualSpace)
     {
-        bool isAtEndOfLine;
-        int visualColumn = GetVisualColumn(visualPosition, allowVirtualSpace, out isAtEndOfLine);
-        int documentOffset = GetRelativeOffset(visualColumn) + FirstLine.Offset;
-        TextViewPosition pos = new TextViewPosition(Document.GetLocation(documentOffset), visualColumn);
-        pos.IsAtEndOfLine = isAtEndOfLine;
-        return pos;
+        var column = GetVisualColumn(visualPosition, allowVirtualSpace, out bool isAtEndOfLine);
+        var offset = GetRelativeOffset(column) + FirstLine.Offset;
+        
+        return new TextViewPosition(Document.GetLocation(offset), column)
+        {
+            IsAtEndOfLine = isAtEndOfLine
+        };
     }
 
     /// <summary>
@@ -702,12 +692,13 @@ public sealed class VisualLine
     /// <param name="allowVirtualSpace">Controls whether positions in virtual space may be returned.</param>
     public TextViewPosition GetTextViewPositionFloor(Point visualPosition, bool allowVirtualSpace)
     {
-        bool isAtEndOfLine;
-        int visualColumn = GetVisualColumnFloor(visualPosition, allowVirtualSpace, out isAtEndOfLine);
-        int documentOffset = GetRelativeOffset(visualColumn) + FirstLine.Offset;
-        TextViewPosition pos = new TextViewPosition(Document.GetLocation(documentOffset), visualColumn);
-        pos.IsAtEndOfLine = isAtEndOfLine;
-        return pos;
+        var column = GetVisualColumnFloor(visualPosition, allowVirtualSpace, out bool isAtEndOfLine);
+        var offset = GetRelativeOffset(column) + FirstLine.Offset;
+        
+        return new TextViewPosition(Document.GetLocation(offset), column)
+        {
+            IsAtEndOfLine = isAtEndOfLine
+        };
     }
 
     /// <summary>
@@ -717,16 +708,18 @@ public sealed class VisualLine
 
     internal void Dispose()
     {
-        if (phase == LifetimePhase.Disposed)
+        if (IsDisposed)
         {
             return;
         }
 
         Debug.Assert(phase == LifetimePhase.Live);
+
         phase = LifetimePhase.Disposed;
-        foreach (TextLine textLine in TextLines)
+        
+        foreach (var line in TextLines)
         {
-            textLine.Dispose();
+            line.Dispose();
         }
     }
 
@@ -749,14 +742,10 @@ public sealed class VisualLine
                 {
                     return Math.Max(0, visualColumn + 1);
                 }
-                else if (visualColumn > 0)
-                {
-                    return visualColumn - 1;
-                }
-                else
-                {
-                    return -1;
-                }
+
+                return visualColumn > 0
+                    ? visualColumn - 1
+                    : -1;
             }
             else
             {
@@ -766,33 +755,25 @@ public sealed class VisualLine
                 {
                     return 0;
                 }
-                else if (visualColumn > 0 && direction == LogicalDirection.Backward)
-                {
-                    return 0;
-                }
-                else
-                {
-                    return -1;
-                }
+
+                return visualColumn > 0 && direction == LogicalDirection.Backward
+                    ? 0
+                    : -1;
             }
         }
 
         int i;
+        
         if (direction == LogicalDirection.Backward)
         {
             // Search Backwards:
             // If the last element doesn't handle line borders, return the line end as caret stop
 
-            if (visualColumn > VisualLength && !elements[elements.Count - 1].HandlesLineBorders && HasImplicitStopAtLineEnd(mode))
+            if (visualColumn > VisualLength && !elements[^1].HandlesLineBorders && HasImplicitStopAtLineEnd(mode))
             {
-                if (allowVirtualSpace)
-                {
-                    return visualColumn - 1;
-                }
-                else
-                {
-                    return VisualLength;
-                }
+                return allowVirtualSpace
+                    ? visualColumn - 1
+                    : VisualLength;
             }
             // skip elements that start after or at visualColumn
             for (i = elements.Count - 1; i >= 0; i--)
@@ -802,17 +783,20 @@ public sealed class VisualLine
                     break;
                 }
             }
+
             // search last element that has a caret stop
             for (; i >= 0; i--)
             {
-                int pos = elements[i].GetNextCaretPosition(
+                var pos = elements[i].GetNextCaretPosition(
                     Math.Min(visualColumn, elements[i].VisualColumn + elements[i].VisualLength + 1),
                     direction, mode);
+                
                 if (pos >= 0)
                 {
                     return pos;
                 }
             }
+
             // If we've found nothing, and the first element doesn't handle line borders,
             // return the line start as normal caret stop.
             if (visualColumn > 0 && !elements[0].HandlesLineBorders && HasImplicitStopAtLineStart(mode))
@@ -839,9 +823,11 @@ public sealed class VisualLine
             // search first element that has a caret stop
             for (; i < elements.Count; i++)
             {
-                int pos = elements[i].GetNextCaretPosition(
+                var pos = elements[i].GetNextCaretPosition(
                     Math.Max(visualColumn, elements[i].VisualColumn - 1),
-                    direction, mode);
+                    direction,
+                    mode);
+                
                 if (pos >= 0)
                 {
                     return pos;
@@ -849,7 +835,7 @@ public sealed class VisualLine
             }
             // if we've found nothing, and the last element doesn't handle line borders,
             // return the line end as caret stop
-            if ((allowVirtualSpace || !elements[elements.Count - 1].HandlesLineBorders) && HasImplicitStopAtLineEnd(mode))
+            if ((allowVirtualSpace || !elements[^1].HandlesLineBorders) && HasImplicitStopAtLineEnd(mode))
             {
                 if (visualColumn < VisualLength)
                 {
@@ -861,72 +847,25 @@ public sealed class VisualLine
                 }
             }
         }
+        
         // we've found nothing, return -1 and let the caret search continue in the next line
         return -1;
     }
 
-    private static bool HasStopsInVirtualSpace(CaretPositioningMode mode)
-    {
-        return mode == CaretPositioningMode.Normal || mode == CaretPositioningMode.EveryCodepoint;
-    }
+    private static bool HasStopsInVirtualSpace(CaretPositioningMode mode) => mode == CaretPositioningMode.Normal || mode == CaretPositioningMode.EveryCodepoint;
 
-    private static bool HasImplicitStopAtLineStart(CaretPositioningMode mode)
-    {
-        return mode == CaretPositioningMode.Normal || mode == CaretPositioningMode.EveryCodepoint;
-    }
+    private static bool HasImplicitStopAtLineStart(CaretPositioningMode mode) => mode == CaretPositioningMode.Normal || mode == CaretPositioningMode.EveryCodepoint;
 
-    private static bool HasImplicitStopAtLineEnd(CaretPositioningMode mode)
-    {
-        return true;
-    }
+    private static bool HasImplicitStopAtLineEnd(CaretPositioningMode _) => true;
 
     private VisualLineDrawingVisual visual;
 
     internal VisualLineDrawingVisual Render()
     {
         Debug.Assert(phase == LifetimePhase.Live);
-        
+
         visual ??= new VisualLineDrawingVisual(this, textView.FlowDirection);
 
         return visual;
-    }
-}
-
-internal sealed class VisualLineDrawingVisual : DrawingVisual
-{
-    public readonly VisualLine VisualLine;
-    public readonly double Height;
-    internal bool IsAdded;
-
-    public VisualLineDrawingVisual(VisualLine visualLine, FlowDirection flow)
-    {
-        VisualLine = visualLine;
-        var drawingContext = RenderOpen();
-        double pos = 0;
-        foreach (TextLine textLine in visualLine.TextLines)
-        {
-            if (flow == FlowDirection.LeftToRight)
-            {
-                textLine.Draw(drawingContext, new Point(0, pos), InvertAxes.None);
-            }
-            else
-            {
-                // Invert Axis for RightToLeft (Arabic language) support
-                textLine.Draw(drawingContext, new Point(0, pos), InvertAxes.Horizontal);
-            }
-            pos += textLine.Height;
-        }
-        Height = pos;
-        drawingContext.Close();
-    }
-
-    protected override GeometryHitTestResult HitTestCore(GeometryHitTestParameters hitTestParameters)
-    {
-        return null!;
-    }
-
-    protected override HitTestResult HitTestCore(PointHitTestParameters hitTestParameters)
-    {
-        return null!;
     }
 }
