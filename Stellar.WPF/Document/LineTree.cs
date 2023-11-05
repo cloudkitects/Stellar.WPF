@@ -6,18 +6,25 @@ using System;
 namespace Stellar.WPF.Document;
 
 /// <summary>
-/// An augmented red-black tree of document lines implementing most operations with
-/// O(logN) time complexity.
+/// An augmented red-black tree of document lines implementing
+/// most operations in O(logN).
 /// </summary>
 /// <remarks>
 /// The tree is never empty, it initially contains an empty line.
 /// </remarks>
 internal sealed class LineTree : IList<Line>
 {
-    #region constructor
+    #region fields and props
+    internal const bool RED = true;
+    internal const bool BLACK = false;
+
     private readonly Document document;
     private Line root;
 
+    public int LineCount => root.lineCount;
+    #endregion
+
+    #region constructor
     public LineTree(Document document)
     {
         this.document = document;
@@ -134,7 +141,7 @@ internal sealed class LineTree : IList<Line>
     }
     #endregion
 
-    #region Properties to/from line
+    #region properties to/from line
     public Line LineAt(int index)
     {
         Debug.Assert(index >= 0);
@@ -250,10 +257,6 @@ internal sealed class LineTree : IList<Line>
         }
         return offset;
     }
-    #endregion
-
-    #region LineCount
-    public int LineCount => root.lineCount;
     #endregion
 
     #region validate data
@@ -409,9 +412,6 @@ internal sealed class LineTree : IList<Line>
     #endregion
 
     #region red/black tree
-    internal const bool RED = true;
-    internal const bool BLACK = false;
-
     private void InsertAsLeft(Line parentNode, Line newNode)
     {
         Debug.Assert(parentNode.left == null);
@@ -754,12 +754,12 @@ internal sealed class LineTree : IList<Line>
 
     private static Line Sibling(Line node)
     {
-        if (node == node.parent.left)
+        if (node == node.parent!.left)
         {
-            return node.parent.right;
+            return node.parent.right!;
         }
 
-        return node.parent.left;
+        return node.parent.left!;
     }
 
     private static Line Sibling(Line node, Line parent)
@@ -768,10 +768,10 @@ internal sealed class LineTree : IList<Line>
 
         if (node == parent.left)
         {
-            return parent.right;
+            return parent.right!;
         }
 
-        return parent.left;
+        return parent.left!;
     }
 
     private static bool GetColor(Line node)

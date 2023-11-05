@@ -1,7 +1,7 @@
 ﻿namespace Stellar.WPF.Document;
 
 /// <summary>
-/// An (Offset,Length)-pair.
+/// A text segment defined by document start and end offsets plus length.
 /// </summary>
 public interface ISegment
 {
@@ -13,7 +13,7 @@ public interface ISegment
     /// <summary>
     /// Gets the length of the segment.
     /// </summary>
-    /// <remarks>For line segments (IDocumentLine), the length does not include the line delimiter.</remarks>
+    /// <remarks>Length does not include the line delimiter for line segments.</remarks>
     int Length { get; }
 
     /// <summary>

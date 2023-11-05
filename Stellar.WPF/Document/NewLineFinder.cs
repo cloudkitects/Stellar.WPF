@@ -1,8 +1,13 @@
-﻿namespace Stellar.WPF.Document;
+﻿using System;
+using System.Text;
+
+namespace Stellar.WPF.Document;
 
 internal static class NewLineFinder
 {
     private static readonly char[] newline = { '\r', '\n' };
+
+    internal static readonly string[] NewlineStrings = { "\r\n", "\r", "\n" };
 
     /// <summary>
     /// Get the location of the next new line character in a string, or SimpleSegment.Invalid if none is found.
@@ -49,5 +54,76 @@ internal static class NewLineFinder
         }
 
         return SimpleSegment.Invalid;
+    }
+
+    /// <summary>
+    /// Gets the new line string used in the document at the specified line.
+    /// </summary>
+    internal static string GetNewLineString(this IDocument document, int lineNumber)
+    {
+        var line = document.GetLineByNumber(lineNumber);
+        
+        if (line.SeparatorLength == 0)
+        {
+            // no separator at the end of the document; use the one from the previous line
+            line = line.PreviousLine;
+
+            if (line == null)
+            {
+                return Environment.NewLine;
+            }
+        }
+
+        return document.GetText(line.Offset + line.Length, line.SeparatorLength);
+    }
+
+    /// <summary>
+    /// Gets whether the specified string is a newline sequence.
+    /// </summary>
+    public static bool IsNewLine(this string newLine)
+    {
+        return newLine == "\r\n" || newLine == "\n" || newLine == "\r";
+    }
+
+    /// <summary>
+    /// Normalizes all new lines in <paramref name="input"/> to be <paramref name="newLine"/>.
+    /// </summary>
+    public static string? NormalizeNewLines(this string input, string newLine)
+    {
+        if (string.IsNullOrWhiteSpace(input))
+        {
+            return null;
+        }
+
+        if (!IsNewLine(newLine))
+        {
+            throw new ArgumentException($"{nameof(newline)} must be a known new line sequence");
+        }
+
+        var ds = Next(input, 0);
+
+        // the input does not contain any new lines
+        if (ds == SimpleSegment.Invalid)
+        {
+            return input;
+        }
+
+        var b = new StringBuilder(input.Length);
+        var lastEndOffset = 0;
+
+        do
+        {
+            b.Append(input, lastEndOffset, ds.Offset - lastEndOffset);
+            b.Append(newLine);
+            
+            lastEndOffset = ds.EndOffset;
+            ds = Next(input, lastEndOffset);
+        }
+        while (ds != SimpleSegment.Invalid);
+        
+        // remaining string (after last newline)
+        b.Append(input, lastEndOffset, input.Length - lastEndOffset);
+        
+        return b.ToString();
     }
 }

@@ -191,7 +191,7 @@ public sealed partial class Line : ILine
         }
         internal set
         {
-            // set by DocumentLineTree
+            // set by the line tree
             exactLength = value;
         }
     }

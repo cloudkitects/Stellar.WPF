@@ -1,7 +1,7 @@
 ﻿namespace Stellar.WPF.Rendering;
 
 /// <summary>
-/// Allows <see cref="VisualLineGenerator"/>s, <see cref="IVisualLineTransformer"/>s and
+/// Allows <see cref="VisualLineGenerator"/>s, <see cref="IRenderer"/>s and
 /// <see cref="IBackgroundRenderer"/>s to be notified when they are added or removed from a text view.
 /// </summary>
 public interface ITextViewConnector

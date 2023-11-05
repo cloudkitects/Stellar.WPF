@@ -1,5 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Globalization;
+using System.IO;
 using System.Linq;
 
 using Stellar.WPF.Document;
@@ -259,7 +261,7 @@ public class StyledLine
             sectionOffset = sectionEndOffset;
         }
     }
-/*
+
     /// <summary>
     /// Writes the styled line to the StyledTextWriter.
     /// </summary>
@@ -339,7 +341,7 @@ public class StyledLine
     /// <summary>
     /// Produces HTML code for the line, with &lt;span class="colorName"&gt; tags.
     /// </summary>
-    public static string ToHtml(HtmlOptions options = null)
+    public string ToHtml(HtmlOptions options = null!)
     {
         var writer = new StringWriter(CultureInfo.InvariantCulture);
 
@@ -371,7 +373,7 @@ public class StyledLine
     {
         return $"[{GetType().Name} {ToHtml()}]";
     }
-*/
+
     /// <summary>
     /// Creates a <see cref="StyledTextModel"/> that stores the styles of this line.
     /// </summary>

@@ -4,7 +4,6 @@ namespace Stellar.WPF.Utilities
 {
     internal static class CollectionExtensions
     {
-        #region IList
         public static void AddIfNotExists<T>(this IList<T> list, T obj)
         {
             if (!list.Contains(obj))
@@ -12,6 +11,21 @@ namespace Stellar.WPF.Utilities
                 list.Add(obj);
             }
         }
-        #endregion
+
+        public static void AddRange<T>(this ICollection<T> collection, IEnumerable<T> elements)
+        {
+            foreach (T e in elements)
+            {
+                collection.Add(e);
+            }
+        }
+
+        /// <summary>
+        /// Creates an IEnumerable with a single value.
+        /// </summary>
+        public static IEnumerable<T> ToEnumerable<T>(this T value)
+        {
+            yield return value;
+        }
     }
 }

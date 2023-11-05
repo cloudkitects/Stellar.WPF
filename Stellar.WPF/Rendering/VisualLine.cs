@@ -255,13 +255,13 @@ public sealed class VisualLine
         Debug.Assert(textOffset == LastLine.EndOffset - FirstLine.Offset);
     }
 
-    internal void RunTransformers(ITextRunContext context, IVisualLineTransformer[] transformers)
+    internal void RunTransformers(ITextRunContext context, IRenderer[] renderers)
     {
         Debug.Assert(phase == LifetimePhase.Transforming);
 
-        foreach (var transformer in transformers)
+        foreach (var renderer in renderers)
         {
-            transformer.Transform(context, elements);
+            renderer.Initialize(context, elements);
         }
 
         // WPF requires that either all or none of the typography properties to be set

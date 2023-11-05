@@ -4,7 +4,7 @@ using System.Windows;
 
 namespace Stellar.WPF.Rendering;
 
-sealed class CurrentLineHighlightRenderer : IBackgroundRenderer
+sealed class CurrentLineRenderer : IBackgroundRenderer
 {
     #region fields and props
     int line;
@@ -41,7 +41,7 @@ sealed class CurrentLineHighlightRenderer : IBackgroundRenderer
 
     #endregion
 
-    public CurrentLineHighlightRenderer(TextView textView)
+    public CurrentLineRenderer(TextView textView)
     {
         BorderPen = new Pen(new SolidColorBrush(DefaultBorder), 1);
         BorderPen.Freeze();

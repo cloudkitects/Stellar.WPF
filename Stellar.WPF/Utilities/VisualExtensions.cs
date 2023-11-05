@@ -179,7 +179,6 @@ namespace Stellar.WPF.Utilities
         {
             return Round(value - pixelSize, pixelSize * 2) + pixelSize;
         }
-
         #endregion
     }
 }

@@ -113,7 +113,7 @@ public class VisualLineLinkText : TextElement
     }
 
     /// <inheritdoc/>
-    protected override VisualLineText CreateInstance(int length)
+    protected override TextElement CreateInstance(int length)
     {
         return new VisualLineLinkText(ParentVisualLine, length)
         {

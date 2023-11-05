@@ -1,11 +1,13 @@
-﻿using Stellar.WPF.Document;
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Windows.Controls.Primitives;
 using System.Windows.Media.TextFormatting;
 using System.Windows.Media;
 using System.Windows;
+
+using Stellar.WPF.Document;
+using Stellar.WPF.Editing;
 using Stellar.WPF.Utilities;
 
 namespace Stellar.WPF.Rendering;
@@ -16,8 +18,8 @@ namespace Stellar.WPF.Rendering;
 public sealed class BackgroundGeometryBuilder
 {
     private double cornerRadius;
-    private PathFigureCollection figures = new();
-    private PathFigure figure;
+    private readonly PathFigureCollection figures = new();
+    private PathFigure? figure;
     private int insertionIndex;
     private double lastTop, lastBottom;
     private double lastLeft, lastRight;
@@ -69,8 +71,13 @@ public sealed class BackgroundGeometryBuilder
     public void AddSegment(TextView textView, ISegment segment)
     {
         var pixelSize = (textView ?? throw new ArgumentNullException(nameof(textView))).GetPixelSize();
-        
-        foreach (var rect in GetRectsForSegment(textView, segment, ExtendToFullWidthAtLineEnd))
+
+        if (segment is null)
+        {
+            throw new ArgumentNullException(nameof(segment));
+        }
+
+        foreach (var rect in GetRectsForSegmentInternal(textView, segment, ExtendToFullWidthAtLineEnd))
         {
             AddRectangle(pixelSize, rect);
         }
@@ -95,9 +102,9 @@ public sealed class BackgroundGeometryBuilder
         {
             var halfBorder = 0.5 * BorderThickness;
 
-            AddRectangle((rect.Left   - halfBorder).Round(pixelSize.Width)  + halfBorder,
-                         (rect.Top    - halfBorder).Round(pixelSize.Height) + halfBorder,
-                         (rect.Right  + halfBorder).Round(pixelSize.Width)  - halfBorder,
+            AddRectangle((rect.Left - halfBorder).Round(pixelSize.Width) + halfBorder,
+                         (rect.Top - halfBorder).Round(pixelSize.Height) + halfBorder,
+                         (rect.Right + halfBorder).Round(pixelSize.Width) - halfBorder,
                          (rect.Bottom + halfBorder).Round(pixelSize.Height) - halfBorder);
         }
         else
@@ -113,13 +120,13 @@ public sealed class BackgroundGeometryBuilder
     /// </summary>
     public static IEnumerable<Rect> GetRectsForSegment(TextView textView, ISegment segment, bool extendToFullWidthAtLineEnd = false)
     {
-        return GetRectsForSegmentImpl(
+        return GetRectsForSegmentInternal(
             textView ?? throw new ArgumentNullException(nameof(textView)),
             segment ?? throw new ArgumentNullException(nameof(segment)),
             extendToFullWidthAtLineEnd);
     }
 
-    private static IEnumerable<Rect> GetRectsForSegmentImpl(TextView textView, ISegment segment, bool extendToFullWidthAtLineEnd)
+    private static IEnumerable<Rect> GetRectsForSegmentInternal(TextView textView, ISegment segment, bool extendToFullWidthAtLineEnd)
     {
         var segmentStart = segment.Offset;
         var segmentEnd = segment.Offset + segment.Length;
@@ -130,12 +137,10 @@ public sealed class BackgroundGeometryBuilder
         TextViewPosition start;
         TextViewPosition end;
 
-        if (segment is SelectionSegment)
+        if (segment is SelectionSegment selection)
         {
-            var sel = (SelectionSegment)segment;
-
-            start = new TextViewPosition(textView.Document.GetLocation(sel.StartOffset), sel.StartVisualColumn);
-            end = new TextViewPosition(textView.Document.GetLocation(sel.EndOffset), sel.EndVisualColumn);
+            start = new TextViewPosition(textView.Document.GetLocation(selection.StartOffset), selection.StartVisualColumn);
+            end = new TextViewPosition(textView.Document.GetLocation(selection.EndOffset), selection.EndVisualColumn);
         }
         else
         {
@@ -143,29 +148,36 @@ public sealed class BackgroundGeometryBuilder
             end = new TextViewPosition(textView.Document.GetLocation(segmentEnd));
         }
 
-        foreach (VisualLine vl in textView.VisualLines)
+        foreach (var line in textView.VisualLines)
         {
-            int vlStartOffset = vl.FirstLine.Offset;
-            if (vlStartOffset > segmentEnd)
+            var startOffset = line.FirstLine.Offset;
+            
+            if (startOffset > segmentEnd)
+            {
                 break;
-            int vlEndOffset = vl.LastLine.Offset + vl.LastLine.Length;
-            if (vlEndOffset < segmentStart)
+            }
+
+            var endOffset = line.LastLine.Offset + line.LastLine.Length;
+
+            if (endOffset < segmentStart)
+            {
                 continue;
+            }
 
-            int segmentStartVC;
-            if (segmentStart < vlStartOffset)
-                segmentStartVC = 0;
-            else
-                segmentStartVC = vl.ValidateVisualColumn(start, extendToFullWidthAtLineEnd);
+            var startColumn = segmentStart < startOffset
+                ? 0
+                : line.ValidateVisualColumn(start, extendToFullWidthAtLineEnd);
+            
+            var endColumn = segmentEnd > endOffset
+                ? extendToFullWidthAtLineEnd
+                    ? int.MaxValue
+                    : line.VisualLengthWithEndOfLineMarker
+                : line.ValidateVisualColumn(end, extendToFullWidthAtLineEnd);
 
-            int segmentEndVC;
-            if (segmentEnd > vlEndOffset)
-                segmentEndVC = extendToFullWidthAtLineEnd ? int.MaxValue : vl.VisualLengthWithEndOfLineMarker;
-            else
-                segmentEndVC = vl.ValidateVisualColumn(end, extendToFullWidthAtLineEnd);
-
-            foreach (var rect in ProcessTextLines(textView, vl, segmentStartVC, segmentEndVC))
+            foreach (var rect in ProcessTextLines(textView, line, startColumn, endColumn))
+            {
                 yield return rect;
+            }
         }
     }
 
@@ -173,120 +185,152 @@ public sealed class BackgroundGeometryBuilder
     /// Calculates the rectangles for the visual column segment.
     /// This returns one rectangle for each line inside the segment.
     /// </summary>
-    public static IEnumerable<Rect> GetRectsFromVisualSegment(TextView textView, VisualLine line, int startVC, int endVC)
+    public static IEnumerable<Rect> GetRectsFromVisualSegment(TextView textView, VisualLine line, int startColumn, int endColumn)
     {
         return ProcessTextLines(
             textView ?? throw new ArgumentNullException(nameof(textView)),
             line ?? throw new ArgumentNullException(nameof(line)),
-            startVC,
-            endVC);
+            startColumn,
+            endColumn);
     }
 
-    private static IEnumerable<Rect> ProcessTextLines(TextView textView, VisualLine visualLine, int segmentStartVC, int segmentEndVC)
+    private static IEnumerable<Rect> ProcessTextLines(TextView textView, VisualLine visualLine, int segmentStartColumn, int segmentEndColumn)
     {
-        TextLine lastTextLine = visualLine.TextLines.Last();
-        Vector scrollOffset = textView.ScrollOffset;
+        var lastTextLine = visualLine.TextLines.Last();
+        var scrollOffset = textView.ScrollOffset;
 
-        for (int i = 0; i < visualLine.TextLines.Count; i++)
+        for (var i = 0; i < visualLine.TextLines.Count; i++)
         {
-            TextLine line = visualLine.TextLines[i];
-            double y = visualLine.GetTextLineVisualYPosition(line, VisualYPosition.Top);
-            int visualStartCol = visualLine.GetTextLineVisualStartColumn(line);
-            int visualEndCol = visualStartCol + line.Length;
-            if (line == lastTextLine)
-                visualEndCol -= 1; // 1 position for the TextEndOfParagraph
-            else
-                visualEndCol -= line.TrailingWhitespaceLength;
+            var line = visualLine.TextLines[i];
+            var y = visualLine.GetTextLineVisualYPosition(line, VisualYPosition.Top);
+            
+            var startColumn = visualLine.GetTextLineStartColumn(line);
+            var endColumn = startColumn + line.Length -
+                (line == lastTextLine
+                    ? 1
+                    : line.TrailingWhitespaceLength);
 
-            if (segmentEndVC < visualStartCol)
-                break;
-            if (lastTextLine != line && segmentStartVC > visualEndCol)
-                continue;
-            int segmentStartVCInLine = Math.Max(segmentStartVC, visualStartCol);
-            int segmentEndVCInLine = Math.Min(segmentEndVC, visualEndCol);
-            y -= scrollOffset.Y;
-            Rect lastRect = Rect.Empty;
-            if (segmentStartVCInLine == segmentEndVCInLine)
+            if (segmentEndColumn < startColumn)
             {
-                // GetTextBounds crashes for length=0, so we'll handle this case with GetDistanceFromCharacterHit
-                // We need to return a rectangle to ensure empty lines are still visible
-                double pos = visualLine.GetTextLineVisualXPosition(line, segmentStartVCInLine);
-                pos -= scrollOffset.X;
-                // The following special cases are necessary to get rid of empty rectangles at the end of a TextLine if "Show Spaces" is active.
-                // If not excluded once, the same rectangle is calculated (and added) twice (since the offset could be mapped to two visual positions; end/start of line), if there is no trailing whitespace.
-                // Skip this TextLine segment, if it is at the end of this line and this line is not the last line of the VisualLine and the selection continues and there is no trailing whitespace.
-                if (segmentEndVCInLine == visualEndCol && i < visualLine.TextLines.Count - 1 && segmentEndVC > segmentEndVCInLine && line.TrailingWhitespaceLength == 0)
+                break;
+            }
+
+            if (lastTextLine != line && segmentStartColumn > endColumn)
+            {
+                continue;
+            }
+
+            var segmentStartColumnInLine = Math.Max(segmentStartColumn, startColumn);
+            var segmentEndColumnInLine = Math.Min(segmentEndColumn, endColumn);
+
+            y -= scrollOffset.Y;
+
+            var lastRect = Rect.Empty;
+
+            if (segmentStartColumnInLine == segmentEndColumnInLine)
+            {
+                // GetTextBounds() crashes for 0 length; handle it with GetDistanceFromCharacterHit()
+                // and return a rectangle to ensure empty lines are still visible
+                var pos = visualLine.GetTextLineVisualXPosition(line, segmentStartColumnInLine) - scrollOffset.X;
+                
+                // prevent empty rectangles at the end of a line when showing spaces; the same rectangle
+                // is calculated and added twice since the offset could be mapped to two visual positions
+                // if there is no trailing whitespace.
+                if (segmentEndColumnInLine == endColumn &&
+                    i < visualLine.TextLines.Count - 1 &&
+                    segmentEndColumn > segmentEndColumnInLine
+                    && line.TrailingWhitespaceLength == 0)
+                {
                     continue;
-                if (segmentStartVCInLine == visualStartCol && i > 0 && segmentStartVC < segmentStartVCInLine && visualLine.TextLines[i - 1].TrailingWhitespaceLength == 0)
+                }
+
+                if (segmentStartColumnInLine == startColumn &&
+                    i > 0 &&
+                    segmentStartColumn < segmentStartColumnInLine &&
+                    visualLine.TextLines[i - 1].TrailingWhitespaceLength == 0)
+                {
                     continue;
+                }
+
                 lastRect = new Rect(pos, y, textView.EmptyLineSelectionWidth, line.Height);
             }
             else
             {
-                if (segmentStartVCInLine <= visualEndCol)
+                if (segmentStartColumnInLine <= endColumn)
                 {
-                    foreach (TextBounds b in line.GetTextBounds(segmentStartVCInLine, segmentEndVCInLine - segmentStartVCInLine))
+                    foreach (var bounds in line.GetTextBounds(segmentStartColumnInLine, segmentEndColumnInLine - segmentStartColumnInLine))
                     {
-                        double left = b.Rectangle.Left - scrollOffset.X;
-                        double right = b.Rectangle.Right - scrollOffset.X;
+                        var left = bounds.Rectangle.Left - scrollOffset.X;
+                        var right = bounds.Rectangle.Right - scrollOffset.X;
+
                         if (!lastRect.IsEmpty)
+                        {
                             yield return lastRect;
-                        // left>right is possible in RTL languages
+                        }
+                        
+                        // left > right is possible in RTL languages
                         lastRect = new Rect(Math.Min(left, right), y, Math.Abs(right - left), line.Height);
                     }
                 }
             }
-            // If the segment ends in virtual space, extend the last rectangle with the rectangle the portion of the selection
-            // after the line end.
-            // Also, when word-wrap is enabled and the segment continues into the next line, extend lastRect up to the end of the line.
-            if (segmentEndVC > visualEndCol)
+
+            // extend the last rectangle with the portion of the selection after the line end if the segment ends in virtual space,
+            // and to the end of the line when word-wrap is enabled and the segment continues into the next line
+            if (segmentEndColumn > endColumn)
             {
                 double left, right;
-                if (segmentStartVC > visualLine.VisualLengthWithEndOfLineMarker)
+
+                // in virtual space
+                if (segmentStartColumn > visualLine.VisualLengthWithEndOfLineMarker)
                 {
-                    // segmentStartVC is in virtual space
-                    left = visualLine.GetTextLineVisualXPosition(lastTextLine, segmentStartVC);
+                    left = visualLine.GetTextLineVisualXPosition(lastTextLine, segmentStartColumn);
                 }
                 else
                 {
-                    // Otherwise, we already processed the rects from segmentStartVC up to visualEndCol,
-                    // so we only need to do the remainder starting at visualEndCol.
-                    // For word-wrapped lines, visualEndCol doesn't include the whitespace hidden by the wrap,
-                    // so we'll need to include it here.
-                    // For the last line, visualEndCol already includes the whitespace.
-                    left = (line == lastTextLine ? line.WidthIncludingTrailingWhitespace : line.Width);
+                    // segmentStartColumn to visualEndColumn rectangles are processed; process the remainder
+                    // include whitespace for visualEndColumn if hidden by word wrap
+                    left = line == lastTextLine
+                        ? line.WidthIncludingTrailingWhitespace
+                        : line.Width;
                 }
-                if (line != lastTextLine || segmentEndVC == int.MaxValue)
+                
+                if (line != lastTextLine || segmentEndColumn == int.MaxValue)
                 {
-                    // If word-wrap is enabled and the segment continues into the next line,
-                    // or if the extendToFullWidthAtLineEnd option is used (segmentEndVC == int.MaxValue),
-                    // we select the full width of the viewport.
+                    // select the full width of the viewport when word-wrap is enabled and the segment continues
+                    // into the next line or if the extendToFullWidthAtLineEnd option is used
                     right = Math.Max(((IScrollInfo)textView).ExtentWidth, ((IScrollInfo)textView).ViewportWidth);
                 }
                 else
                 {
-                    right = visualLine.GetTextLineVisualXPosition(lastTextLine, segmentEndVC);
+                    right = visualLine.GetTextLineVisualXPosition(lastTextLine, segmentEndColumn);
                 }
-                Rect extendSelection = new Rect(Math.Min(left, right), y, Math.Abs(right - left), line.Height);
+                
+                var extendSelection = new Rect(Math.Min(left, right), y, Math.Abs(right - left), line.Height);
+                
                 if (!lastRect.IsEmpty)
                 {
                     if (extendSelection.IntersectsWith(lastRect))
                     {
                         lastRect.Union(extendSelection);
+                        
                         yield return lastRect;
                     }
                     else
                     {
-                        // If the end of the line is in an RTL segment, keep lastRect and extendSelection separate.
+                        // keep lastRect and extendSelection separate if the end of the line is in an RTL segment
                         yield return lastRect;
                         yield return extendSelection;
                     }
                 }
                 else
+                {
                     yield return extendSelection;
+                }
             }
             else
+            {
                 yield return lastRect;
+            }
         }
     }
 
@@ -318,9 +362,9 @@ public sealed class BackgroundGeometryBuilder
                 figure.Segments.Add(MakeLineSegment(right - cornerRadius, top));
                 figure.Segments.Add(MakeArc(right, top + cornerRadius, SweepDirection.Clockwise));
             }
-            
+
             figure.Segments.Add(MakeLineSegment(right, bottom - cornerRadius));
-            
+
             insertionIndex = figure.Segments.Count;
         }
         else
@@ -329,11 +373,11 @@ public sealed class BackgroundGeometryBuilder
             {
                 var radius = right < lastRight
                     ? -cornerRadius
-                    :  cornerRadius;
+                    : cornerRadius;
 
                 var dir1 = right < lastRight ? SweepDirection.Clockwise : SweepDirection.Counterclockwise;
                 var dir2 = right < lastRight ? SweepDirection.Counterclockwise : SweepDirection.Clockwise;
-                
+
                 figure.Segments.Insert(insertionIndex++, MakeArc(lastRight + radius, lastBottom, dir1));
                 figure.Segments.Insert(insertionIndex++, MakeLineSegment(right - radius, top));
                 figure.Segments.Insert(insertionIndex++, MakeArc(right, top + cornerRadius, dir2));
@@ -341,16 +385,16 @@ public sealed class BackgroundGeometryBuilder
 
             figure.Segments.Insert(insertionIndex++, MakeLineSegment(right, bottom - cornerRadius));
             figure.Segments.Insert(insertionIndex, MakeLineSegment(lastLeft, lastTop + cornerRadius));
-            
+
             if (!lastLeft.Nears(left))
             {
                 var radius = left < lastLeft
-                    ?  cornerRadius
+                    ? cornerRadius
                     : -cornerRadius;
-                
+
                 var dir1 = left < lastLeft ? SweepDirection.Counterclockwise : SweepDirection.Clockwise;
                 var dir2 = left < lastLeft ? SweepDirection.Clockwise : SweepDirection.Counterclockwise;
-                
+
                 figure.Segments.Insert(insertionIndex, MakeArc(lastLeft, lastBottom - cornerRadius, dir1));
                 figure.Segments.Insert(insertionIndex, MakeLineSegment(lastLeft - radius, lastBottom));
                 figure.Segments.Insert(insertionIndex, MakeArc(left + radius, lastBottom, dir2));
@@ -372,16 +416,16 @@ public sealed class BackgroundGeometryBuilder
             false,
             dir,
             true);
-        
+
         segment.Freeze();
-        
+
         return segment;
     }
 
     private static LineSegment MakeLineSegment(double x, double y)
     {
         var segment = new LineSegment(new Point(x, y), true);
-        
+
         segment.Freeze();
 
         return segment;
@@ -395,7 +439,7 @@ public sealed class BackgroundGeometryBuilder
         if (figure is not null)
         {
             figure.Segments.Insert(insertionIndex, MakeLineSegment(lastLeft, lastTop + cornerRadius));
-            
+
             if (Math.Abs(lastLeft - lastRight) > cornerRadius)
             {
                 figure.Segments.Insert(insertionIndex, MakeArc(lastLeft, lastBottom - cornerRadius, SweepDirection.Clockwise));
@@ -404,9 +448,9 @@ public sealed class BackgroundGeometryBuilder
             }
 
             figure.IsClosed = true;
-            
+
             figures.Add(figure);
-            
+
             figure = null!;
         }
     }
@@ -423,10 +467,10 @@ public sealed class BackgroundGeometryBuilder
         {
             var geometry = new PathGeometry(figures);
             geometry.Freeze();
-            
+
             return geometry;
         }
-        
+
         return null!;
     }
 }

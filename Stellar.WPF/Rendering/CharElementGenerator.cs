@@ -77,12 +77,12 @@ sealed class CharElementGenerator : VisualLineGenerator, IElementGenerator
 
         if (token == ' ' && ShowSpaces)
         {
-            return new SpaceTextElement(Context.TextView.cachedElements.GetTextForNonPrintableCharacter("\u00B7", Context));
+            return new SpaceTextElement(Context.TextView.npcCache.GetText("\u00B7", Context));
         }
         
         if (token == '\t' && ShowTabs)
         {
-            return new TabTextElement(Context.TextView.cachedElements.GetTextForNonPrintableCharacter("\u00BB", Context));
+            return new TabTextElement(Context.TextView.npcCache.GetText("\u00BB", Context));
         }
         
         if (char.IsControl(token) && ShowControlCharacterBox)

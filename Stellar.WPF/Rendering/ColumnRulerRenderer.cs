@@ -10,24 +10,24 @@ namespace Stellar.WPF.Rendering;
 /// </summary>
 internal sealed class ColumnRulerRenderer : IBackgroundRenderer
 {
-    private Pen pen;
+    private System.Windows.Media.Pen pen;
     private int column;
     private readonly TextView textView;
 
-    public static readonly Color DefaultForeground = Colors.LightGray;
+    public static readonly System.Windows.Media.Color DefaultForeground = Colors.LightGray;
 
     public ColumnRulerRenderer(TextView textView)
     {
         this.textView = textView ?? throw new ArgumentNullException(nameof(textView));
         this.textView.BackgroundRenderers.Add(this);
 
-        pen = new Pen(new SolidColorBrush(DefaultForeground), 1);
+        pen = new System.Windows.Media.Pen(new SolidColorBrush(DefaultForeground), 1);
         pen.Freeze();
     }
 
     public KnownLayer Layer => KnownLayer.Background;
 
-    public void SetRuler(int column, Pen pen)
+    public void SetRuler(int column, System.Windows.Media.Pen pen)
     {
         if (this.column != column)
         {

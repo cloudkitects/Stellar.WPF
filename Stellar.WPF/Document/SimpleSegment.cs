@@ -12,38 +12,13 @@ internal readonly struct SimpleSegment : IEquatable<SimpleSegment>, ISegment
 {
     public static readonly SimpleSegment Invalid = new(-1, -1);
 
-    /// <summary>
-    /// The overlap of two segments or Invalid if they don't overlap.
-    /// </summary>
-    public static SimpleSegment GetOverlap(ISegment segment1, ISegment segment2)
-    {
-        var ss = Math.Max(segment1.Offset, segment2.Offset);
-        var se = Math.Min(segment1.EndOffset, segment2.EndOffset);
-
-        return se >= ss
-            ? new SimpleSegment(ss, se - ss)
-            : Invalid;
-    }
-
     public readonly int Offset, Length;
 
-    int ISegment.Offset
-    {
-        get { return Offset; }
-    }
+    int ISegment.Offset => Offset;
 
-    int ISegment.Length
-    {
-        get { return Length; }
-    }
+    int ISegment.Length => Length;
 
-    public int EndOffset
-    {
-        get
-        {
-            return Offset + Length;
-        }
-    }
+    public int EndOffset => Offset + Length;
 
     public SimpleSegment(int offset, int length)
     {
@@ -57,6 +32,19 @@ internal readonly struct SimpleSegment : IEquatable<SimpleSegment>, ISegment
 
         Offset = segment.Offset;
         Length = segment.Length;
+    }
+
+    /// <summary>
+    /// The overlap of two segments or Invalid if they don't overlap.
+    /// </summary>
+    public static SimpleSegment GetOverlap(ISegment segment1, ISegment segment2)
+    {
+        var ss = Math.Max(segment1.Offset, segment2.Offset);
+        var se = Math.Min(segment1.EndOffset, segment2.EndOffset);
+
+        return se >= ss
+            ? new SimpleSegment(ss, se - ss)
+            : Invalid;
     }
 
     public override int GetHashCode()
@@ -90,7 +78,7 @@ internal readonly struct SimpleSegment : IEquatable<SimpleSegment>, ISegment
     /// <inheritdoc/>
     public override string ToString()
     {
-        return "[Offset=" + Offset.ToString(CultureInfo.InvariantCulture) + ", Length=" + Length.ToString(CultureInfo.InvariantCulture) + "]";
+        return $"[{GetType().Name} Offset={Offset}, Length={Length}]";
     }
 }
 

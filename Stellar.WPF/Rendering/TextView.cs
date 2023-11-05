@@ -20,25 +20,27 @@ using Stellar.WPF.Utilities;
 namespace Stellar.WPF.Rendering;
 
 /// <summary>
-/// A virtualizing panel producing+showing <see cref="VisualLine"/>s for a <see cref="Document"/>.
-/// 
-/// This is the heart of the text editor, this class controls the text rendering process.
-/// 
+/// A virtualizing panel producing+showing <see cref="VisualLine"/>s for a <see cref="Document.Document"/>.
+/// The heart of the text editor, this class controls the text rendering process.
 /// Taken as a standalone control, it's a text viewer without any editing capability.
 /// </summary>
 [System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Design", "CA1001:TypesThatOwnDisposableFieldsShouldBeDisposable",
                                                  Justification = "The user usually doesn't work with TextView but with TextEditor; and nulling the Document property is sufficient to dispose everything.")]
 public class TextView : FrameworkElement, IScrollInfo, IWeakEventListener, ITextEditorComponent, IServiceProvider
 {
+    #region fields
+    private readonly ColumnRulerRenderer columnRulerRenderer;
+    private readonly CurrentLineRenderer currentLineHighlighRenderer;
+
+    private readonly MouseHover hoverLogic;
+    #endregion
+
     #region Constructor
     static TextView()
     {
         ClipToBoundsProperty.OverrideMetadata(typeof(TextView), new FrameworkPropertyMetadata(Boxed.True));
         FocusableProperty.OverrideMetadata(typeof(TextView), new FrameworkPropertyMetadata(Boxed.False));
     }
-
-    private readonly ColumnRulerRenderer columnRulerRenderer;
-    private CurrentLineHighlightRenderer currentLineHighlighRenderer;
 
     /// <summary>
     /// Creates a new TextView instance.
@@ -48,10 +50,10 @@ public class TextView : FrameworkElement, IScrollInfo, IWeakEventListener, IText
         services.AddService(typeof(TextView), this);
         textLayer = new TextLayer(this);
         elementGenerators = new SimpleObservableCollection<VisualLineGenerator>(ElementGenerator_Added, ElementGenerator_Removed);
-        lineTransformers = new SimpleObservableCollection<IVisualLineTransformer>(LineTransformer_Added, LineTransformer_Removed);
+        lineRenderers = new SimpleObservableCollection<IRenderer>(LineRenderer_Added, LineRenderer_Removed);
         backgroundRenderers = new SimpleObservableCollection<IBackgroundRenderer>(BackgroundRenderer_Added, BackgroundRenderer_Removed);
         columnRulerRenderer = new ColumnRulerRenderer(this);
-        currentLineHighlighRenderer = new CurrentLineHighlightRenderer(this);
+        currentLineHighlighRenderer = new CurrentLineRenderer(this);
         Options = new TextEditorOptions();
 
         Debug.Assert(charGenerator != null); // assert that the option change created the builtin element generators
@@ -59,9 +61,9 @@ public class TextView : FrameworkElement, IScrollInfo, IWeakEventListener, IText
         layers = new LayerCollection(this);
         InsertLayer(textLayer, KnownLayer.Text, LayerInsertionPosition.Replace);
 
-        hoverLogic = new MouseHoverLogic(this);
-        hoverLogic.MouseHover += (sender, e) => RaiseHoverEventPair(e, PreviewMouseHoverEvent, MouseHoverEvent);
-        hoverLogic.MouseHoverStopped += (sender, e) => RaiseHoverEventPair(e, PreviewMouseHoverStoppedEvent, MouseHoverStoppedEvent);
+        hoverLogic = new MouseHover(this);
+        hoverLogic.Hover += (sender, e) => RaiseHoverEventPair(e, PreviewMouseHoverEvent, MouseHoverEvent);
+        hoverLogic.Stopped += (sender, e) => RaiseHoverEventPair(e, PreviewMouseHoverStoppedEvent, MouseHoverStoppedEvent);
     }
 
     #endregion
@@ -74,7 +76,7 @@ public class TextView : FrameworkElement, IScrollInfo, IWeakEventListener, IText
         DependencyProperty.Register("Document", typeof(Document.Document), typeof(TextView),
                                     new FrameworkPropertyMetadata(OnDocumentChanged));
     private Document.Document document;
-    private HeightTree heightTree;
+    private CollapsedSectionsTree heightTree;
 
     /// <summary>
     /// Gets/Sets the document displayed by the text editor.
@@ -102,8 +104,8 @@ public class TextView : FrameworkElement, IScrollInfo, IWeakEventListener, IText
             heightTree = null;
             formatter.Dispose();
             formatter = null;
-            cachedElements.Dispose();
-            cachedElements = null;
+            npcCache.Dispose();
+            npcCache = null;
             TextDocumentWeakEventManager.Changing.RemoveListener(oldValue, this);
         }
         document = newValue;
@@ -114,8 +116,8 @@ public class TextView : FrameworkElement, IScrollInfo, IWeakEventListener, IText
             TextDocumentWeakEventManager.Changing.AddListener(newValue, this);
             formatter = TextFormatterFactory.Create(this);
             InvalidateDefaultTextMetrics(); // measuring DefaultLineHeight depends on formatter
-            heightTree = new HeightTree(newValue, DefaultLineHeight);
-            cachedElements = new TextViewCachedElements();
+            heightTree = new CollapsedSectionsTree(newValue, DefaultLineHeight);
+            npcCache = new NpcCache();
         }
         InvalidateMeasure(DispatcherPriority.Normal);
         if (DocumentChanged != null)
@@ -140,10 +142,10 @@ public class TextView : FrameworkElement, IScrollInfo, IWeakEventListener, IText
 
     private void RecreateCachedElements()
     {
-        if (cachedElements != null)
+        if (npcCache != null)
         {
-            cachedElements.Dispose();
-            cachedElements = new TextViewCachedElements();
+            npcCache.Dispose();
+            npcCache = new NpcCache();
         }
     }
 
@@ -252,22 +254,22 @@ public class TextView : FrameworkElement, IScrollInfo, IWeakEventListener, IText
         Redraw();
     }
 
-    private readonly SimpleObservableCollection<IVisualLineTransformer> lineTransformers;
+    private readonly SimpleObservableCollection<IRenderer> lineRenderers;
 
     /// <summary>
     /// Gets a collection where line transformers can be registered.
     /// </summary>
-    public IList<IVisualLineTransformer> LineTransformers => lineTransformers;
+    public IList<IRenderer> LineRenderers => lineRenderers;
 
-    private void LineTransformer_Added(IVisualLineTransformer lineTransformer)
+    private void LineRenderer_Added(IRenderer renderer)
     {
-        ConnectToTextView(lineTransformer);
+        ConnectToTextView(renderer);
         Redraw();
     }
 
-    private void LineTransformer_Removed(IVisualLineTransformer lineTransformer)
+    private void LineRenderer_Removed(IRenderer renderer)
     {
-        DisconnectFromTextView(lineTransformer);
+        DisconnectFromTextView(renderer);
         Redraw();
     }
     #endregion
@@ -386,11 +388,14 @@ public class TextView : FrameworkElement, IScrollInfo, IWeakEventListener, IText
             throw new InvalidOperationException("Cannot replace or insert below the background layer.");
         }
 
-        LayerPosition newPosition = new(referencedLayer, position);
+        var newPosition = new LayerPosition(referencedLayer, position);
+
         LayerPosition.SetLayerPosition(layer, newPosition);
-        for (int i = 0; i < layers.Count; i++)
+        
+        for (var i = 0; i < layers.Count; i++)
         {
-            LayerPosition p = LayerPosition.GetLayerPosition(layers[i]);
+            var p = LayerPosition.GetLayerPosition(layers[i]);
+
             if (p != null)
             {
                 if (p.KnownLayer == referencedLayer && p.Position == LayerInsertionPosition.Replace)
@@ -409,15 +414,16 @@ public class TextView : FrameworkElement, IScrollInfo, IWeakEventListener, IText
                             return;
                     }
                 }
-                else if (p.KnownLayer == referencedLayer && p.Position == LayerInsertionPosition.Above
-                           || p.KnownLayer > referencedLayer)
+                else if (p.KnownLayer == referencedLayer && p.Position == LayerInsertionPosition.Above || p.KnownLayer > referencedLayer)
                 {
                     // we skipped the insertion position (referenced layer does not exist?)
                     layers.Insert(i, layer);
+                    
                     return;
                 }
             }
         }
+
         // inserting after all existing layers:
         layers.Add(layer);
     }
@@ -455,26 +461,32 @@ public class TextView : FrameworkElement, IScrollInfo, IWeakEventListener, IText
     /// </summary>
     internal void AddInlineObject(InlineObjectRun inlineObject)
     {
-        Debug.Assert(inlineObject.VisualLine != null);
+        Debug.Assert(inlineObject.VisualLine is not null);
 
-        // Remove inline object if its already added, can happen e.g. when recreating textrun for word-wrapping
-        bool alreadyAdded = false;
-        for (int i = 0; i < inlineObjects.Count; i++)
+        // remove inline object if its already added, can happen e.g. when recreating textrun for word-wrapping
+        var alreadyAdded = false;
+
+        for (var i = 0; i < inlineObjects.Count; i++)
         {
             if (inlineObjects[i].Element == inlineObject.Element)
             {
                 RemoveInlineObjectRun(inlineObjects[i], true);
+                
                 inlineObjects.RemoveAt(i);
+                
                 alreadyAdded = true;
+                
                 break;
             }
         }
 
         inlineObjects.Add(inlineObject);
+        
         if (!alreadyAdded)
         {
             AddVisualChild(inlineObject.Element);
         }
+        
         inlineObject.Element.Measure(new Size(double.PositiveInfinity, double.PositiveInfinity));
         inlineObject.desiredSize = inlineObject.Element.DesiredSize;
     }
@@ -482,19 +494,21 @@ public class TextView : FrameworkElement, IScrollInfo, IWeakEventListener, IText
     private void MeasureInlineObjects()
     {
         // As part of MeasureOverride(), re-measure the inline objects
-        foreach (InlineObjectRun inlineObject in inlineObjects)
+        foreach (var inlineObject in inlineObjects)
         {
-            if (inlineObject.VisualLine.IsDisposed)
+            if (inlineObject.VisualLine!.IsDisposed)
             {
-                // Don't re-measure inline objects that are going to be removed anyways.
-                // If the inline object will be reused in a different VisualLine, we'll measure it in the AddInlineObject() call.
+                // skip measurement for inline objects that are going to be removed
                 continue;
             }
+            
             inlineObject.Element.Measure(new Size(double.PositiveInfinity, double.PositiveInfinity));
-            if (!inlineObject.Element.DesiredSize.IsClose(inlineObject.desiredSize))
+            
+            if (!inlineObject.Element.DesiredSize.Nears(inlineObject.desiredSize))
             {
-                // the element changed size -> recreate its parent visual line
+                // the element changed size; recreate its parent visual line
                 inlineObject.desiredSize = inlineObject.Element.DesiredSize;
+                
                 if (allVisualLines.Remove(inlineObject.VisualLine))
                 {
                     DisposeVisualLine(inlineObject.VisualLine);
@@ -529,41 +543,45 @@ public class TextView : FrameworkElement, IScrollInfo, IWeakEventListener, IText
         }
 
         inlineObjects.RemoveAll(
-            ior =>
+            inlineObject =>
             {
-                if (visualLinesWithOutstandingInlineObjects.Contains(ior.VisualLine))
+                if (visualLinesWithOutstandingInlineObjects.Contains(inlineObject.VisualLine!))
                 {
-                    RemoveInlineObjectRun(ior, false);
+                    RemoveInlineObjectRun(inlineObject, false);
                     return true;
                 }
                 return false;
             });
+
         visualLinesWithOutstandingInlineObjects.Clear();
     }
 
     // Remove InlineObjectRun.Element from TextLayer.
     // Caller of RemoveInlineObjectRun will remove it from inlineObjects collection.
-    private void RemoveInlineObjectRun(InlineObjectRun ior, bool keepElement)
+    private void RemoveInlineObjectRun(InlineObjectRun inlineObject, bool keepElement)
     {
-        if (!keepElement && ior.Element.IsKeyboardFocusWithin)
+        if (!keepElement && inlineObject.Element.IsKeyboardFocusWithin)
         {
             // When the inline element that has the focus is removed, WPF will reset the
             // focus to the main window without raising appropriate LostKeyboardFocus events.
             // To work around this, we manually set focus to the next focusable parent.
-            UIElement element = this;
-            while (element != null && !element.Focusable)
+            UIElement? element = this;
+
+            while (element is not null && !element.Focusable)
             {
                 element = VisualTreeHelper.GetParent(element) as UIElement;
             }
-            if (element != null)
+            
+            if (element is not null)
             {
                 Keyboard.Focus(element);
             }
         }
-        ior.VisualLine = null;
+        inlineObject.VisualLine = null;
+        
         if (!keepElement)
         {
-            RemoveVisualChild(ior.Element);
+            RemoveVisualChild(inlineObject.Element);
         }
     }
     #endregion
@@ -731,7 +749,8 @@ public class TextView : FrameworkElement, IScrollInfo, IWeakEventListener, IText
     /// </summary>
     private void ClearVisualLines()
     {
-        visibleVisualLines = null;
+        visibleVisualLines = null!;
+
         if (allVisualLines.Count != 0)
         {
             foreach (VisualLine visualLine in allVisualLines)
@@ -818,41 +837,40 @@ public class TextView : FrameworkElement, IScrollInfo, IWeakEventListener, IText
     /// </summary>
     public VisualLine GetOrConstructVisualLine(Line documentLine)
     {
-        if (documentLine == null)
+        if (!Document.Lines.Contains(documentLine ?? throw new ArgumentNullException(nameof(documentLine))))
         {
-            throw new ArgumentNullException(nameof(documentLine));
-        }
-
-        if (!Document.Lines.Contains(documentLine))
-        {
-            throw new InvalidOperationException("Line belongs to wrong document");
+            throw new InvalidOperationException("The line belongs to the wrong document");
         }
 
         VerifyAccess();
 
-        VisualLine l = GetVisualLine(documentLine.Number);
-        if (l == null)
+        var line = GetVisualLine(documentLine.Number);
+        
+        if (line is null)
         {
-            TextRunProperties globalTextRunProperties = CreateGlobalTextRunProperties();
-            VisualLineTextParagraphProperties paragraphProperties = CreateParagraphProperties(globalTextRunProperties);
+            var globalTextRunProperties = CreateGlobalTextRunProperties();
+            var paragraphProperties = CreateParagraphProperties(globalTextRunProperties);
 
             while (heightTree.GetIsCollapsed(documentLine.Number))
             {
                 documentLine = documentLine.PreviousLine;
             }
 
-            l = BuildVisualLine(documentLine,
+            line = BuildVisualLine(documentLine,
                                 globalTextRunProperties, paragraphProperties,
-                                elementGenerators.ToArray(), lineTransformers.ToArray(),
+                                elementGenerators.ToArray(), lineRenderers.ToArray(),
                                 lastAvailableSize);
-            allVisualLines.Add(l);
-            // update all visual top values (building the line might have changed visual top of other lines due to word wrapping)
-            foreach (var line in allVisualLines)
+            
+            allVisualLines.Add(line);
+            
+            // building the line might have changed visual top of other lines due to word wrapping
+            foreach (var visualLine in allVisualLines)
             {
-                line.VisualTop = heightTree.GetVisualPosition(line.FirstLine);
+                visualLine.VisualTop = heightTree.GetVisualPosition(visualLine.FirstLine);
             }
         }
-        return l;
+
+        return line;
     }
     #endregion
 
@@ -1047,7 +1065,7 @@ public class TextView : FrameworkElement, IScrollInfo, IWeakEventListener, IText
         }
 
         var elementGeneratorsArray = elementGenerators.ToArray();
-        var lineTransformersArray = lineTransformers.ToArray();
+        var lineTransformersArray = lineRenderers.ToArray();
         var nextLine = firstLineInView;
         double maxWidth = 0;
         double yPos = -clippedPixelsOnTop;
@@ -1105,19 +1123,22 @@ public class TextView : FrameworkElement, IScrollInfo, IWeakEventListener, IText
 
     #region BuildVisualLine
     private TextFormatter formatter;
-    internal TextViewCachedElements cachedElements;
+    internal NpcCache npcCache;
 
     private TextRunProperties CreateGlobalTextRunProperties()
     {
-        var p = new GlobalTextRunProperties();
-        p.typeface = this.CreateTypeface();
-        p.fontRenderingEmSize = FontSize;
-        p.foregroundBrush = (Brush)GetValue(Control.ForegroundProperty);
+        var properties = new GlobalTextRunProperties
+        {
+            typeface = this.CreateTypeface(),
+            fontRenderingEmSize = FontSize,
+            foregroundBrush = (Brush)GetValue(Control.ForegroundProperty)
+        };
 
-        p.foregroundBrush.WarnIfNotFrozen();
+        properties.foregroundBrush.WarnIfNotFrozen();
 
-        p.cultureInfo = CultureInfo.CurrentCulture;
-        return p;
+        properties.cultureInfo = CultureInfo.CurrentCulture;
+        
+        return properties;
     }
 
     private VisualLineTextParagraphProperties CreateParagraphProperties(TextRunProperties defaultTextRunProperties) => new VisualLineTextParagraphProperties
@@ -1132,7 +1153,7 @@ public class TextView : FrameworkElement, IScrollInfo, IWeakEventListener, IText
                                TextRunProperties globalTextRunProperties,
                                VisualLineTextParagraphProperties paragraphProperties,
                                VisualLineGenerator[] elementGeneratorsArray,
-                               IVisualLineTransformer[] lineTransformersArray,
+                               IRenderer[] lineTransformersArray,
                                Size availableSize)
     {
         if (heightTree.GetIsCollapsed(documentLine.Number))
@@ -1360,9 +1381,11 @@ public class TextView : FrameworkElement, IScrollInfo, IWeakEventListener, IText
                 {
                     if (currentBrush != null)
                     {
-                        var builder = new BackgroundGeometryBuilder();
-                        builder.AlignToWholePixels = true;
-                        builder.CornerRadius = 3;
+                        var builder = new BackgroundGeometryBuilder
+                        {
+                            AlignToWholePixels = true,
+                            CornerRadius = 3
+                        };
                         foreach (var rect in BackgroundGeometryBuilder.GetRectsFromVisualSegment(this, line, startVC, startVC + length))
                         {
                             builder.AddRectangle(this, rect);
@@ -1385,9 +1408,11 @@ public class TextView : FrameworkElement, IScrollInfo, IWeakEventListener, IText
             }
             if (currentBrush != null)
             {
-                var builder = new BackgroundGeometryBuilder();
-                builder.AlignToWholePixels = true;
-                builder.CornerRadius = 3;
+                var builder = new BackgroundGeometryBuilder
+                {
+                    AlignToWholePixels = true,
+                    CornerRadius = 3
+                };
                 foreach (var rect in BackgroundGeometryBuilder.GetRectsFromVisualSegment(this, line, startVC, startVC + length))
                 {
                     builder.AddRectangle(this, rect);
@@ -2116,8 +2141,6 @@ public class TextView : FrameworkElement, IScrollInfo, IWeakEventListener, IText
         remove => RemoveHandler(MouseHoverStoppedEvent, value);
     }
 
-    private MouseHoverLogic hoverLogic;
-
     private void RaiseHoverEventPair(MouseEventArgs e, RoutedEvent tunnelingEvent, RoutedEvent bubblingEvent)
     {
         var mouseDevice = e.MouseDevice;
@@ -2152,10 +2175,10 @@ public class TextView : FrameworkElement, IScrollInfo, IWeakEventListener, IText
     /// Note that if you want a VisualLineElement to span from line N to line M, then you need to collapse only the lines
     /// N+1 to M. Do not collapse line N itself.
     /// 
-    /// When you no longer need the section to be collapsed, call <see cref="CollapsedLineSection.Uncollapse()"/> on the
-    /// <see cref="CollapsedLineSection"/> returned from this method.
+    /// When you no longer need the section to be collapsed, call <see cref="CollapsedSection.Uncollapse()"/> on the
+    /// <see cref="CollapsedSection"/> returned from this method.
     /// </remarks>
-    public CollapsedLineSection CollapseLines(Line start, Line end)
+    public CollapsedSection CollapseLines(Line start, Line end)
     {
         VerifyAccess();
 

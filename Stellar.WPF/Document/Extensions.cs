@@ -191,12 +191,12 @@ public static class Extensions
         }
     }
 
-    static bool IsNormal(CaretPositioningMode mode)
+    static bool IsNormal(this CaretPositioningMode mode)
     {
         return mode == CaretPositioningMode.Normal || mode == CaretPositioningMode.EveryCodepoint;
     }
 
-    static bool StopBetweenCharacters(CaretPositioningMode mode, CharacterClass charBefore, CharacterClass charAfter)
+    static bool StopBetweenCharacters(this CaretPositioningMode mode, CharacterClass charBefore, CharacterClass charAfter)
     {
         if (mode == CaretPositioningMode.EveryCodepoint)
         {
@@ -274,7 +274,7 @@ public static class Extensions
         }
     }
 
-    static CharacterClass GetCharacterClass(UnicodeCategory c)
+    static CharacterClass GetCharacterClass(this UnicodeCategory c)
     {
         return c switch
         {
@@ -296,6 +296,151 @@ public static class Extensions
             
             _ => CharacterClass.Other,
         };
+    }
+    #endregion
+
+    #region ITextSource
+    /// <summary>
+    /// Gets a single indentation segment starting at <paramref name="offset"/> - at most one tab
+    /// or <paramref name="indentationSize"/> spaces.
+    /// </summary>
+    /// <param name="textSource">The text source.</param>
+    /// <param name="offset">The offset where the indentation segment starts.</param>
+    /// <param name="indentationSize">The size of an indentation unit. See <see cref="TextEditorOptions.IndentationSize"/>.</param>
+    /// <returns>The indentation segment.
+    /// If there is no indentation character at the specified <paramref name="offset"/>,
+    /// an empty segment is returned.</returns>
+    public static ISegment GetSingleIndentationSegment(this ITextSource textSource, int offset, int indentationSize)
+    {
+        if (textSource is null)
+        {
+            throw new ArgumentNullException(nameof(textSource));
+        }
+
+        var pos = offset;
+
+        while (pos < textSource.TextLength)
+        {
+            var c = textSource.GetCharAt(pos);
+
+            if (c == '\t')
+            {
+                if (pos == offset)
+                {
+                    return new SimpleSegment(offset, 1);
+                }
+                
+                break;
+            }
+            else if (c == ' ')
+            {
+                if (pos - offset >= indentationSize)
+                {
+                    break;
+                }
+            }
+            else
+            {
+                break;
+            }
+
+            pos++;
+        }
+
+        return new SimpleSegment(offset, pos - offset);
+    }
+
+    /// <summary>
+    /// Gets all whitespace (' ' and '\t', but no newlines) after offset.
+    /// </summary>
+    /// <param name="textSource">The text source.</param>
+    /// <param name="offset">The offset where the whitespace starts.</param>
+    /// <returns>The segment containing the whitespace.</returns>
+    public static ISegment GetWhitespaceAfter(this ITextSource textSource, int offset)
+    {
+        if (textSource is null)
+        {
+            throw new ArgumentNullException(nameof(textSource));
+        }
+
+        int pos;
+
+        for (pos = offset; pos < textSource.TextLength; pos++)
+        {
+            var c = textSource.GetCharAt(pos);
+
+            if (c != ' ' && c != '\t')
+            {
+                break;
+            }
+        }
+
+        return new SimpleSegment(offset, pos - offset);
+    }
+
+    /// <summary>
+    /// Gets all whitespace (' ' and '\t', but no newlines) before offset.
+    /// </summary>
+    /// <param name="textSource">The text source.</param>
+    /// <param name="offset">The offset where the whitespace ends.</param>
+    /// <returns>The segment containing the whitespace.</returns>
+    public static ISegment GetWhitespaceBefore(this ITextSource textSource, int offset)
+    {
+        if (textSource is null)
+        {
+            throw new ArgumentNullException(nameof(textSource));
+        }
+
+        int pos;
+
+        for (pos = offset - 1; pos >= 0; pos--)
+        {
+            var c = textSource.GetCharAt(pos);
+            
+            if (c != ' ' && c != '\t')
+            {
+                break;
+            }
+        }
+
+        pos++; // go back the one character that isn't whitespace
+        
+        return new SimpleSegment(pos, offset - pos);
+    }
+
+    /// <summary>
+    /// Gets the leading whitespace segment on the document line.
+    /// </summary>
+    public static ISegment GetLeadingWhitespace(this Document document, Line line)
+    {
+        if (line is null)
+        {
+            throw new ArgumentNullException(nameof(line));
+        }
+
+        return GetWhitespaceAfter(document, line.Offset);
+    }
+
+    /// <summary>
+    /// Gets the trailing whitespace segment on the document line.
+    /// </summary>
+    public static ISegment GetTrailingWhitespace(this Document document, Line line)
+    {
+        if (line is null)
+        {
+            throw new ArgumentNullException(nameof(line));
+        }
+
+        var segment = GetWhitespaceBefore(document, line.EndOffset);
+
+        // If the whole line consists of whitespace, we consider all of it as leading whitespace,
+        // so return an empty segment as trailing whitespace.
+        if (segment.Offset == line.Offset)
+        {
+            return new SimpleSegment(line.EndOffset, 0);
+        }
+        
+        return segment;
     }
     #endregion
 }
