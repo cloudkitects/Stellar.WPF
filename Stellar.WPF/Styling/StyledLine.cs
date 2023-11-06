@@ -7,7 +7,7 @@ using System.Linq;
 using Stellar.WPF.Document;
 using Stellar.WPF.Utilities;
 
-namespace Stellar.WPF.Highlighting;
+namespace Stellar.WPF.Styling;
 
 /// <summary>
 /// Represents a styled document line.

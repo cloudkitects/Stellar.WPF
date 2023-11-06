@@ -293,10 +293,7 @@ public sealed class UndoStack : INotifyPropertyChanged
 
 	internal void RegisterAffectedDocument(Document document)
 	{
-		if (affectedDocuments == null)
-        {
-            affectedDocuments = new List<Document>();
-        }
+		affectedDocuments ??= new List<Document>();
 
         if (!affectedDocuments.Contains(document)) {
 			affectedDocuments.Add(document);

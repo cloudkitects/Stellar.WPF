@@ -5,7 +5,7 @@ using System.Windows.Media;
 
 using Stellar.WPF.Rendering;
 
-namespace Stellar.WPF.Highlighting;
+namespace Stellar.WPF.Styling;
 
 /// <summary>
 /// Highlighting brush implementation that takes a frozen brush.

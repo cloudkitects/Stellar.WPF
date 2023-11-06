@@ -2,7 +2,7 @@
 using System.IO;
 using System.Net;
 
-namespace Stellar.WPF.Highlighting;
+namespace Stellar.WPF.Styling;
 
 /// <summary>
 /// Holds options for converting text to HTML.

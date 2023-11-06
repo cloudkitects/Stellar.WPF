@@ -8,7 +8,7 @@ using System.Windows.Media;
 
 using Stellar.WPF.Utilities;
 
-namespace Stellar.WPF.Highlighting
+namespace Stellar.WPF.Styling
 {
     /// <summary>
     /// RichTextWriter implementation that produces HTML.

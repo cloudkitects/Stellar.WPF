@@ -2,7 +2,7 @@
 using System.IO;
 using System.Windows;
 using System.Windows.Media;
-using Stellar.WPF.Highlighting;
+using Stellar.WPF.Styling;
 
 namespace Stellar.WPF.Utilities;
 
@@ -79,7 +79,7 @@ abstract class StyledTextWriter : TextWriter
     /// <summary>
     /// Begin a highlighted span.
     /// </summary>
-    public virtual void BeginSpan(Highlighting.Style highlightingColor)
+    public virtual void BeginSpan(Styling.Style highlightingColor)
     {
         BeginUnhandledSpan();
     }

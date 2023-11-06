@@ -1,7 +1,7 @@
 ﻿using System;
 using System.Text.RegularExpressions;
 
-namespace Stellar.WPF.Highlighting;
+namespace Stellar.WPF.Styling;
 
 /// <summary>
 /// A highlighting rule.

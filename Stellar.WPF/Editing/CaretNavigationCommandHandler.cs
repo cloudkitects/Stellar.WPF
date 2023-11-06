@@ -455,7 +455,7 @@ static class CaretNavigationCommandHandler
                     var newLine = textView.GetDocumentLineByVisualTop(y);
 
                     targetVisualLine = textView.GetOrConstructVisualLine(newLine);
-                    targetLine = targetVisualLine.GetTextLineByVisualYPosition(y);
+                    targetLine = targetVisualLine.GetTextLineByVisualY(y);
 
                     break;
                 }

@@ -3,7 +3,7 @@ using System.Collections.Generic;
 
 using Stellar.WPF.Utilities;
 
-namespace Stellar.WPF.Highlighting;
+namespace Stellar.WPF.Styling;
 
 /// <summary>
 /// A composite of spans and their highlighting (styling) rules.

@@ -6,7 +6,7 @@ using System.Windows;
 
 using Stellar.WPF.Document;
 
-namespace Stellar.WPF.Highlighting;
+namespace Stellar.WPF.Styling;
 
 /// <summary>
 /// Allows copying HTML text to the clipboard.
@@ -75,7 +75,7 @@ public static class HtmlClipboard
     /// <param name="segment">The part of the document to create HTML for. You can pass <c>null</c> to create HTML for the whole document.</param>
     /// <param name="options">The options for the HTML creation.</param>
     /// <returns>HTML code for the document part.</returns>
-    public static string CreateHtmlFragment(IDocument document, IHighlighter highlighter, ISegment segment, HtmlOptions options)
+    public static string CreateHtmlFragment(IDocument document, IStyler highlighter, ISegment segment, HtmlOptions options)
     {
         if (document is null)
         {
@@ -92,10 +92,7 @@ public static class HtmlClipboard
             throw new ArgumentException("Highlighter does not belong to the specified document.");
         }
 
-        if (segment is null)
-        {
-            segment = new SimpleSegment(0, document.TextLength);
-        }
+        segment ??= new SimpleSegment(0, document.TextLength);
 
         var html = new StringBuilder();
         var segmentEndOffset = segment.EndOffset;
@@ -107,7 +104,7 @@ public static class HtmlClipboard
             
             if (highlighter != null)
             {
-                styledLine = highlighter.HighlightLine(line.Number);
+                styledLine = highlighter.StyleLine(line.Number);
             }
             else
             {

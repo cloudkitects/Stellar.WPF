@@ -180,5 +180,9 @@ namespace Stellar.WPF.Utilities
             return Round(value - pixelSize, pixelSize * 2) + pixelSize;
         }
         #endregion
+
+        #region Style
+        public static bool IsNullOrEmpty(this Styling.Style style) => style is null || style.IsEmpty;
+        #endregion
     }
 }

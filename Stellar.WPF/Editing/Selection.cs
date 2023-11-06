@@ -4,7 +4,7 @@ using System.Text;
 using System.Windows;
 
 using Stellar.WPF.Document;
-using Stellar.WPF.Highlighting;
+using Stellar.WPF.Styling;
 using Stellar.WPF.Utilities;
 
 namespace Stellar.WPF.Editing
@@ -243,7 +243,7 @@ namespace Stellar.WPF.Editing
                 throw new ArgumentNullException(nameof(options));
             }
 
-            IHighlighter highlighter = textArea.GetService(typeof(IHighlighter)) as IHighlighter;
+            IStyler highlighter = textArea.GetService(typeof(IStyler)) as IStyler;
 			StringBuilder html = new StringBuilder();
 			bool first = true;
 			foreach (ISegment selectedSegment in this.Segments) {

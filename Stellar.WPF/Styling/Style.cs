@@ -8,10 +8,10 @@ using System.Windows.Media;
 
 using Stellar.WPF.Utilities;
 
-namespace Stellar.WPF.Highlighting;
+namespace Stellar.WPF.Styling;
 
 /// <summary>
-/// A set of font properties and foreground and background color.
+/// A named set of font properties and brushes.
 /// </summary>
 [Serializable]
 public class Style : ISerializable, IFreezable, ICloneable, IEquatable<Style>
@@ -210,7 +210,7 @@ public class Style : ISerializable, IFreezable, ICloneable, IEquatable<Style>
     /// </summary>
     protected Style(SerializationInfo info, StreamingContext context)
     {
-        if (info == null)
+        if (info is null)
         {
             throw new ArgumentNullException(nameof(info));
         }
@@ -259,7 +259,7 @@ public class Style : ISerializable, IFreezable, ICloneable, IEquatable<Style>
     [System.Security.SecurityCritical]
     public virtual void GetObjectData(SerializationInfo info, StreamingContext context)
     {
-        if (info == null)
+        if (info is null)
         {
             throw new ArgumentNullException(nameof(info));
         }

@@ -14,7 +14,7 @@ using System.Windows.Shapes;
 
 using Stellar.WPF.Document;
 using Stellar.WPF.Editing;
-using Stellar.WPF.Highlighting;
+using Stellar.WPF.Styling;
 using Stellar.WPF.Rendering;
 using Stellar.WPF.Utilities;
 
@@ -319,7 +319,7 @@ public class TextEditor : Control, ITextEditorComponent, IServiceProvider, IWeak
     /// <returns></returns>
     protected virtual IRenderer CreateRenderer(ISyntax syntax)
     {
-        return new HighlightingColorizer(syntax ?? throw new ArgumentNullException(nameof(syntax)));
+        return new StyledDocumentRenderer(syntax ?? throw new ArgumentNullException(nameof(syntax)));
     }
     #endregion
 
@@ -897,10 +897,9 @@ public class TextEditor : Control, ITextEditorComponent, IServiceProvider, IWeak
             throw new ArgumentNullException(nameof(fileName));
         }
 
-        using (FileStream fs = new FileStream(fileName, FileMode.Open, FileAccess.Read, FileShare.Read))
-        {
-            Load(fs);
-        }
+        using var stream = new FileStream(fileName, FileMode.Open, FileAccess.Read, FileShare.Read);
+
+        Load(stream);
     }
 
     /// <summary>
@@ -951,15 +950,14 @@ public class TextEditor : Control, ITextEditorComponent, IServiceProvider, IWeak
     /// </summary>
     public void Save(string fileName)
     {
-        if (fileName == null)
+        if (fileName is null)
         {
             throw new ArgumentNullException(nameof(fileName));
         }
 
-        using (FileStream fs = new FileStream(fileName, FileMode.Create, FileAccess.Write, FileShare.None))
-        {
-            Save(fs);
-        }
+        using var stream = new FileStream(fileName, FileMode.Create, FileAccess.Write, FileShare.None);
+        
+        Save(stream);
     }
     #endregion
 

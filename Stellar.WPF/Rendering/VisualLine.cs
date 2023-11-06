@@ -394,7 +394,7 @@ public sealed class VisualLine
 
         if (visualColumn >= VisualLengthWithEndOfLineMarker)
         {
-            return TextLines[TextLines.Count - 1];
+            return TextLines[^1];
         }
 
         foreach (TextLine line in TextLines)
@@ -477,7 +477,7 @@ public sealed class VisualLine
     /// <summary>
     /// Gets a TextLine by the visual Y position.
     /// </summary>
-    public TextLine GetTextLineByVisualYPosition(double visualTop)
+    public TextLine GetTextLineByVisualY(double visualTop)
     {
         const double epsilon = 0.0001;
         var pos = VisualTop;
@@ -547,11 +547,11 @@ public sealed class VisualLine
     /// Gets the visual column from a document position (relative to top left of the document).
     /// If the user clicks between two visual columns, rounds to the nearest column.
     /// </summary>
-    public int GetVisualColumn(Point point, bool allowVirtualSpace) => GetVisualColumn(GetTextLineByVisualYPosition(point.Y), point.X, allowVirtualSpace);
+    public int GetVisualColumn(Point point, bool allowVirtualSpace) => GetVisualColumn(GetTextLineByVisualY(point.Y), point.X, allowVirtualSpace);
 
     internal int GetVisualColumn(Point point, bool allowVirtualSpace, out bool isAtEndOfLine)
     {
-        var textLine = GetTextLineByVisualYPosition(point.Y);
+        var textLine = GetTextLineByVisualY(point.Y);
 
         var column = GetVisualColumn(textLine, point.X, allowVirtualSpace);
 
@@ -626,13 +626,13 @@ public sealed class VisualLine
 
     internal int GetVisualColumnFloor(Point point, bool allowVirtualSpace, out bool isAtEndOfLine)
     {
-        var textLine = GetTextLineByVisualYPosition(point.Y);
+        var textLine = GetTextLineByVisualY(point.Y);
 
         if (point.X > textLine.WidthIncludingTrailingWhitespace)
         {
             isAtEndOfLine = true;
             
-            if (allowVirtualSpace && textLine == TextLines[TextLines.Count - 1])
+            if (allowVirtualSpace && textLine == TextLines[^1])
             {
                 // clicking virtual space in the last line
                 var virtualX = (int)((point.X - textLine.WidthIncludingTrailingWhitespace) / textView.WideSpaceWidth);

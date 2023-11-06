@@ -3,18 +3,18 @@ using System.Collections.Generic;
 
 using Stellar.WPF.Document;
 
-namespace Stellar.WPF.Highlighting;
+namespace Stellar.WPF.Styling;
 
 /// <summary>
-/// Event handler for <see cref="IHighlighter.HighlightingStateChanged"/>
+/// Event handler for <see cref="IStyler.StylingStateChanged"/>
 /// </summary>
-public delegate void HighlightingStateChangedEventHandler(int fromLineNumber, int toLineNumber);
+public delegate void StylingStateChangedEventHandler(int fromLineNumber, int toLineNumber);
 
 /// <summary>
-/// A contract for highlighting a document.
+/// A contract for styling a document.
 /// </summary>
-/// <remarks>Used by the <see cref="Colorizer"/> to register highlighters as a TextView service.</remarks>
-public interface IHighlighter : IDisposable
+/// <remarks>Used by the <see cref="StyledDocumentRenderer"/> to register stylers as a TextView service.</remarks>
+public interface IStyler : IDisposable
 {
     /// <summary>
     /// The underlying document.
@@ -33,26 +33,26 @@ public interface IHighlighter : IDisposable
     IEnumerable<Style> GetStyles(int line);
 
     /// <summary>
-    /// Highlights the specified document line.
+    /// Styles the specified document line.
     /// </summary>
-    /// <returns>A <see cref="StyledLine"/> line object that represents the highlighted sections.</returns>
-    StyledLine HighlightLine(int line);
+    /// <returns>A <see cref="StyledLine"/> line object that represents the styled sections.</returns>
+    StyledLine StyleLine(int line);
 
     /// <summary>
-    /// Enforces a highlighting state update (triggering the HighlightingStateChanged event if necessary)
+    /// Enforces a styling state update (triggering the StylingStateChanged event if necessary)
     /// for all lines up to (and inclusive) the specified line.
     /// </summary>
-    void UpdateHighlightingState(int line);
+    void UpdateStylingState(int line);
 
     /// <summary>
-    /// Notification when the highlighter detects that the highlighting state at the
+    /// Notification when the styler detects that the styling state at the
     /// <b>beginning</b> of the specified lines has changed.
     /// </summary>
     /// <remarks>
     /// <c>fromLine</c> and <c>toLine</c> are both inclusive, and a
     /// single-line change is represented by <c>fromLine == toLine</c>.
     /// 
-    /// Highlighting of line X raises this event for line X + 1 if the highlighting
+    /// Styling of line X raises this event for line X + 1 if the styling
     /// state at the end of X has changed from its previous state.
     /// This event can also be raised after changes to external data (e.g., semantic information).
     ///
@@ -60,24 +60,24 @@ public interface IHighlighter : IDisposable
     /// there are no document changes between the start of X and the start of Y > X. See
     /// <see cref="HighlightingColorizer.OnHighlightStateChanged"/> for more details.
     /// </remarks>
-    event HighlightingStateChangedEventHandler HighlightingStateChanged;
+    event StylingStateChangedEventHandler StylingStateChanged;
 
     /// <summary>
-    /// Opens a group of <see cref="HighlightLine"/> calls.
+    /// Opens a group of <see cref="StyleLine"/> calls.
     /// </summary>
     /// <remarks>
-    /// Calling this method before calling <see cref="HighlightLine"/>, is not required
-    /// but can make highlighting much more performant in some cases, e.g., when re-using a resolver within
-    /// a highlighting group. The group is closed by either a <see cref="EndHighlighting"/> or a
+    /// Calling this method before calling <see cref="StyleLine"/>, is not required
+    /// but can make styling much more performant in some cases, e.g., when re-using a resolver within
+    /// a styling group. The group is closed by either a <see cref="EndStyling"/> or a
     /// <see cref="IDisposable.Dispose"/> call. Nested groups are not allowed.
     /// </remarks>
-    void BeginHighlighting();
+    void BeginStyling();
 
     /// <summary>
-    /// Closes the currently opened group of <see cref="HighlightLine"/> calls.
+    /// Closes the currently opened group of <see cref="StyleLine"/> calls.
     /// </summary>
-    /// <seealso cref="BeginHighlighting"/>.
-    void EndHighlighting();
+    /// <seealso cref="BeginStyling"/>.
+    void EndStyling();
 
     /// <summary>
     /// Retrieves the style with the specified name, or null if none matching the name is found.

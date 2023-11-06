@@ -6,7 +6,7 @@ using System.Windows;
 using System.Windows.Documents;
 using Stellar.WPF.Document;
 
-namespace Stellar.WPF.Highlighting;
+namespace Stellar.WPF.Styling;
 
 /// <summary>
 /// A container of text styles at given offsets.

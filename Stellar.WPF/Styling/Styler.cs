@@ -6,15 +6,15 @@ using System.Linq;
 using Stellar.WPF.Document;
 using Stellar.WPF.Utilities;
 
-using SpanStack = Stellar.WPF.Utilities.ImmutableStack<Stellar.WPF.Highlighting.Span>;
+using SpanStack = Stellar.WPF.Utilities.ImmutableStack<Stellar.WPF.Styling.Span>;
 
-namespace Stellar.WPF.Highlighting
+namespace Stellar.WPF.Styling
 {
     /// <summary>
-    /// This class can syntax-highlight a document.
-    /// It automatically manages invalidating the highlighting when the document changes.
+    /// A document styler, encapsulates invalidating the styling state
+    /// when the document changes.
     /// </summary>
-    public class Highlighter : ILineTracker, IHighlighter
+    public class Styler : ILineTracker, IStyler
     {
         /// <summary>
         /// Stores the span state at the end of each line.
@@ -27,20 +27,20 @@ namespace Stellar.WPF.Highlighting
         private readonly ISyntax syntax;
         private readonly StylingEngine engine;
         private readonly WeakLineTracker lineTracker;
-        private bool isHighlighting;
-        private bool isInHighlightingGroup;
+        private bool isStyling;
+        private bool isInStylingGroup;
         private bool isDisposed;
         private SpanStack initialSpanStack = SpanStack.Empty;
 
         /// <summary>
-        /// The document being highlighted.
+        /// The document being styled.
         /// </summary>
         public IDocument Document => document;
 
         /// <summary>
-        /// Creates a new DocumentHighlighter instance.
+        /// Creates a new Styler instance.
         /// </summary>
-        public Highlighter(Document.Document document, ISyntax syntax)
+        public Styler(Document.Document document, ISyntax syntax)
         {
             this.document = document ?? throw new ArgumentNullException(nameof(document));
             this.syntax = syntax ?? throw new ArgumentNullException(nameof(syntax));
@@ -55,7 +55,7 @@ namespace Stellar.WPF.Highlighting
         }
 
         /// <summary>
-        /// Disposes the document highlighter.
+        /// Disposes the document styler.
         /// </summary>
         public void Dispose()
         {
@@ -67,7 +67,7 @@ namespace Stellar.WPF.Highlighting
         #region ILineTracker
         void ILineTracker.BeforeRemoving(Line line)
         {
-            CheckIsHighlighting();
+            CheckIsStyling();
             
             var number = line.Number;
             
@@ -87,7 +87,7 @@ namespace Stellar.WPF.Highlighting
 
         void ILineTracker.ResetLength(Line line, int _)
         {
-            CheckIsHighlighting();
+            CheckIsStyling();
 
             var number = line.Number;
 
@@ -101,7 +101,7 @@ namespace Stellar.WPF.Highlighting
 
         void ILineTracker.AfterInserting(Line line, Line newLine)
         {
-            CheckIsHighlighting();
+            CheckIsStyling();
 
             Debug.Assert(line.Number + 1 == newLine.Number);
 
@@ -137,27 +137,27 @@ namespace Stellar.WPF.Highlighting
             {
                 initialSpanStack = value ?? SpanStack.Empty;
 
-                InvalidateHighlighting();
+                InvalidateStyling();
             }
         }
 
         /// <summary>
-        /// Invalidates all stored highlighting info.
-        /// When the document changes, the highlighting is invalidated automatically, this method
-        /// needs to be called only when there are changes to the highlighting rule set.
+        /// Invalidates all stored styling info.
+        /// When the document changes, the styling is invalidated automatically, this method
+        /// needs to be called only when there are changes to the styling rule set.
         /// </summary>
-        public void InvalidateHighlighting()
+        public void InvalidateStyling()
         {
             InvalidateSpanStacks();
-            OnHighlightStateChanged(1, document.LineCount); // force a redraw with the new highlighting
+            OnStylingStateChanged(1, document.LineCount); // force a redraw
         }
 
         /// <summary>
-        /// Invalidates stored highlighting info, but does not raise the HighlightingStateChanged event.
+        /// Invalidates stored styling info, but does not raise the StylingStateChanged event.
         /// </summary>
         private void InvalidateSpanStacks()
         {
-            CheckIsHighlighting();
+            CheckIsStyling();
 
             spanStacks.Clear();
             spanStacks.Add(initialSpanStack);
@@ -173,20 +173,20 @@ namespace Stellar.WPF.Highlighting
         private int firstInvalidLine;
 
         /// <inheritdoc/>
-        public StyledLine HighlightLine(int lineNumber)
+        public StyledLine StyleLine(int lineNumber)
         {
             if (lineNumber < 1 || document.LineCount < lineNumber)
             {
                 throw new ArgumentOutOfRangeException(nameof(lineNumber), $"{lineNumber} < 1 or {document.LineCount} < {lineNumber}");
             }
 
-            CheckIsHighlighting();
+            CheckIsStyling();
             
-            isHighlighting = true;
+            isStyling = true;
             
             try
             {
-                HighlightUpTo(lineNumber - 1);
+                StyleUpTo(lineNumber - 1);
 
                 var line = document.GetLineByNumber(lineNumber);
                 
@@ -198,7 +198,7 @@ namespace Stellar.WPF.Highlighting
             }
             finally
             {
-                isHighlighting = false;
+                isStyling = false;
             }
         }
 
@@ -219,7 +219,7 @@ namespace Stellar.WPF.Highlighting
 
             if (firstInvalidLine <= lineNumber)
             {
-                UpdateHighlightingState(lineNumber);
+                UpdateStylingState(lineNumber);
             }
             
             return spanStacks[lineNumber];
@@ -233,33 +233,33 @@ namespace Stellar.WPF.Highlighting
                 .Select(span => span.Style);
         }
 
-        private void CheckIsHighlighting()
+        private void CheckIsStyling()
         {
             if (isDisposed)
             {
-                throw new ObjectDisposedException("Highlighter");
+                throw new ObjectDisposedException("Styler");
             }
 
-            if (isHighlighting)
+            if (isStyling)
             {
-                throw new InvalidOperationException("Invalid call, a highlighting operation is currently running.");
+                throw new InvalidOperationException("Invalid call, a styling operation is currently running.");
             }
         }
 
         /// <inheritdoc/>
-        public void UpdateHighlightingState(int lineNumber)
+        public void UpdateStylingState(int lineNumber)
         {
-            CheckIsHighlighting();
+            CheckIsStyling();
 
-            isHighlighting = true;
+            isStyling = true;
             
             try
             {
-                HighlightUpTo(lineNumber);
+                StyleUpTo(lineNumber);
             }
             finally
             {
-                isHighlighting = false;
+                isStyling = false;
             }
         }
 
@@ -267,7 +267,7 @@ namespace Stellar.WPF.Highlighting
         /// Sets the engine's CurrentSpanStack to the end of the target line.
         /// Updates the span stack for all lines up to (and including) the target line, if necessary.
         /// </summary>
-        private void HighlightUpTo(int targetLineNumber)
+        private void StyleUpTo(int targetLineNumber)
         {
             for (var currentLine = 0; currentLine <= targetLineNumber; currentLine++)
             {
@@ -318,7 +318,7 @@ namespace Stellar.WPF.Highlighting
 
                 if (lineNumber + 1 < document.LineCount)
                 {
-                    OnHighlightStateChanged(lineNumber + 1, lineNumber + 1);
+                    OnStylingStateChanged(lineNumber + 1, lineNumber + 1);
                 }
             }
             else if (firstInvalidLine == lineNumber)
@@ -336,7 +336,7 @@ namespace Stellar.WPF.Highlighting
 
         private static bool EqualSpanStacks(SpanStack a, SpanStack b)
         {
-            // We must use value equality between the stacks because HighlightingColorizer.OnHighlightStateChanged
+            // We must use value equality between the stacks because Styler.OnStyleStateChanged
             // depends on the fact that equal input state + unchanged line contents produce equal output state.
             if (a == b)
             {
@@ -368,39 +368,39 @@ namespace Stellar.WPF.Highlighting
         }
 
         /// <inheritdoc/>
-        public event HighlightingStateChangedEventHandler? HighlightingStateChanged;
+        public event StylingStateChangedEventHandler? StylingStateChanged;
 
         /// <summary>
-        /// Is called when the highlighting state at the end of the specified line has changed.
+        /// Is called when the styling state at the end of the specified line has changed.
         /// </summary>
-        /// <remarks>This callback must not call HighlightLine or InvalidateHighlighting.
+        /// <remarks>This callback must not call styleLine or InvalidateStyling.
         /// It may call GetSpanStack, but only for the changed line and lines above.
         /// This method must not modify the document.</remarks>
-        protected virtual void OnHighlightStateChanged(int fromLineNumber, int toLineNumber) => HighlightingStateChanged?.Invoke(fromLineNumber, toLineNumber);
+        protected virtual void OnStylingStateChanged(int fromLineNumber, int toLineNumber) => StylingStateChanged?.Invoke(fromLineNumber, toLineNumber);
 
         /// <inheritdoc/>
         public Style DefaultStyle => null!;
 
         /// <inheritdoc/>
-        public void BeginHighlighting()
+        public void BeginStyling()
         {
-            if (isInHighlightingGroup)
+            if (isInStylingGroup)
             {
-                throw new InvalidOperationException("Highlighting group is already open");
+                throw new InvalidOperationException("Styling group is already open");
             }
 
-            isInHighlightingGroup = true;
+            isInStylingGroup = true;
         }
 
         /// <inheritdoc/>
-        public void EndHighlighting()
+        public void EndStyling()
         {
-            if (!isInHighlightingGroup)
+            if (!isInStylingGroup)
             {
-                throw new InvalidOperationException("Highlighting group is not open");
+                throw new InvalidOperationException("Styling group is not open");
             }
 
-            isInHighlightingGroup = false;
+            isInStylingGroup = false;
         }
 
         /// <inheritdoc/>

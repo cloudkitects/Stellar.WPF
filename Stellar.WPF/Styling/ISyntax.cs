@@ -1,6 +1,6 @@
 ﻿using System.Collections.Generic;
 
-namespace Stellar.WPF.Highlighting;
+namespace Stellar.WPF.Styling;
 
 /// <summary>
 /// A syntax-highlighting (styling) definition.

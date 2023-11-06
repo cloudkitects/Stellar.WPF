@@ -1,6 +1,6 @@
 ﻿using Stellar.WPF.Document;
 
-namespace Stellar.WPF.Highlighting;
+namespace Stellar.WPF.Styling;
 
 /// <summary>
 /// A text segment with styling information.

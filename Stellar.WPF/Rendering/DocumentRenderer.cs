@@ -46,7 +46,7 @@ public abstract class DocumentRenderer : Renderer
                     currentLine = context.Document.GetLineByOffset(elementOffset);
                     currentLineStart = currentLine.Offset;
                     currentLineEnd = currentLineStart + currentLine.Length;
-                    currentLineTotalEnd = currentLineStart + currentLine.TotalLength;
+                    currentLineTotalEnd = currentLineStart + currentLine.Length;
                     
                     RenderLine(currentLine);
                 }
@@ -88,5 +88,4 @@ public abstract class DocumentRenderer : Renderer
             Render(sCol, eCol, action);
         }
     }
-}
 }

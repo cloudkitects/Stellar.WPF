@@ -9,7 +9,7 @@ using System.Windows.Documents;
 using System.Windows.Input;
 
 using Stellar.WPF.Document;
-using Stellar.WPF.Highlighting;
+using Stellar.WPF.Styling;
 using Stellar.WPF.Utilities;
 
 namespace Stellar.WPF.Editing
@@ -469,7 +469,7 @@ namespace Stellar.WPF.Editing
             // or to the SharpDevelop forums.
             if (ConfirmDataFormat(textArea, data, DataFormats.Html))
             {
-                var highlighter = textArea.GetService(typeof(IHighlighter)) as IHighlighter;
+                var highlighter = textArea.GetService(typeof(IStyler)) as IStyler;
                 
                 HtmlClipboard.SetHtml(data, HtmlClipboard.CreateHtmlFragment(textArea.Document, highlighter, wholeLine, new HtmlOptions(textArea.Options)));
             }

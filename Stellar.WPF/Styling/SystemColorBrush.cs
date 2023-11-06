@@ -6,7 +6,7 @@ using System.Windows;
 
 using Stellar.WPF.Rendering;
 
-namespace Stellar.WPF.Highlighting;
+namespace Stellar.WPF.Styling;
 
 /// <summary>
 /// HighlightingBrush implementation that finds a brush using a resource.

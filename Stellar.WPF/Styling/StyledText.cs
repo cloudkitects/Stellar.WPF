@@ -6,7 +6,7 @@ using System.Windows.Documents;
 
 using Stellar.WPF.Document;
 
-namespace Stellar.WPF.Highlighting;
+namespace Stellar.WPF.Styling;
 
 /// <summary>
 /// An immutable text segment with multiple styling information at different offsets.

@@ -1072,13 +1072,10 @@ public class TextView : FrameworkElement, IScrollInfo, IWeakEventListener, IText
         while (yPos < availableSize.Height && nextLine != null)
         {
             VisualLine visualLine = GetVisualLine(nextLine.Number);
-            if (visualLine == null)
-            {
-                visualLine = BuildVisualLine(nextLine,
+            visualLine ??= BuildVisualLine(nextLine,
                                              globalTextRunProperties, paragraphProperties,
                                              elementGeneratorsArray, lineTransformersArray,
                                              availableSize);
-            }
 
             visualLine.VisualTop = scrollOffset.Y + yPos;
 
