@@ -3,7 +3,7 @@
 namespace Stellar.WPF.Document;
 
 /// <summary>
-/// Describes a change to a TextDocument.
+/// Describes an undoable change to a document.
 /// </summary>
 sealed class UndoableChange : IUndoableWithContext
 {

@@ -1,10 +1,8 @@
-using Stellar.WPF.Utilities;
 using System.Diagnostics;
-using System.Linq;
-using System;
-using Microsoft.VisualStudio.TestPlatform.Utilities;
 
-namespace Stellar.WPF.Tests;
+using Stellar.WPF.Utilities;
+
+namespace Stellar.WPF.Tests.Utilities;
 
 public class TreeTests
 {

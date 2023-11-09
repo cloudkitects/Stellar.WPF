@@ -7,9 +7,9 @@ using Stellar.WPF.Utilities;
 namespace Stellar.WPF.Rendering;
 
 /// <summary>
-/// a cache of non-printable character (NPC) texts.
+/// a cache of non-printable character texts.
 /// </summary>
-internal sealed class NpcCache : IDisposable
+internal sealed class NonPrintablesCache : IDisposable
 {
     private TextFormatter? formatter;
     private Dictionary<string, TextLine>? npcTexts;

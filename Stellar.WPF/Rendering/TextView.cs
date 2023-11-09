@@ -104,20 +104,24 @@ public class TextView : FrameworkElement, IScrollInfo, IWeakEventListener, IText
             heightTree = null;
             formatter.Dispose();
             formatter = null;
-            npcCache.Dispose();
-            npcCache = null;
-            TextDocumentWeakEventManager.Changing.RemoveListener(oldValue, this);
+            nonPrintablesCache.Dispose();
+            nonPrintablesCache = null;
+            WeakDocumentEventManager.Changing.RemoveListener(oldValue, this);
         }
         document = newValue;
         ClearScrollData();
         ClearVisualLines();
         if (newValue != null)
         {
-            TextDocumentWeakEventManager.Changing.AddListener(newValue, this);
+            WeakDocumentEventManager.Changing.AddListener(newValue, this);
+            
             formatter = TextFormatterFactory.Create(this);
+            
             InvalidateDefaultTextMetrics(); // measuring DefaultLineHeight depends on formatter
+            
             heightTree = new CollapsedSectionsTree(newValue, DefaultLineHeight);
-            npcCache = new NpcCache();
+            
+            nonPrintablesCache = new NonPrintablesCache();
         }
         InvalidateMeasure(DispatcherPriority.Normal);
         if (DocumentChanged != null)
@@ -142,17 +146,17 @@ public class TextView : FrameworkElement, IScrollInfo, IWeakEventListener, IText
 
     private void RecreateCachedElements()
     {
-        if (npcCache != null)
+        if (nonPrintablesCache != null)
         {
-            npcCache.Dispose();
-            npcCache = new NpcCache();
+            nonPrintablesCache.Dispose();
+            nonPrintablesCache = new NonPrintablesCache();
         }
     }
 
     /// <inheritdoc cref="IWeakEventListener.ReceiveWeakEvent"/>
     protected virtual bool ReceiveWeakEvent(Type managerType, object sender, EventArgs e)
     {
-        if (managerType == typeof(TextDocumentWeakEventManager.Changing))
+        if (managerType == typeof(Document.WeakDocumentEventManager.Changing))
         {
             // TODO: put redraw into background so that other input events can be handled before the redraw.
             // Unfortunately the "easy" approach (just use DispatcherPriority.Background) here makes the editor twice as slow because
@@ -1059,23 +1063,25 @@ public class TextView : FrameworkElement, IScrollInfo, IWeakEventListener, IText
 
         newVisualLines = new List<VisualLine>();
 
-        if (VisualLineConstructionStarting is not null)
-        {
-            VisualLineConstructionStarting(this, new VisualLineConstructionStartEventArgs(firstLineInView));
-        }
+        VisualLineConstructionStarting?.Invoke(this, new VisualLineConstructionStartEventArgs(firstLineInView));
 
         var elementGeneratorsArray = elementGenerators.ToArray();
         var lineTransformersArray = lineRenderers.ToArray();
         var nextLine = firstLineInView;
+        
         double maxWidth = 0;
         double yPos = -clippedPixelsOnTop;
+
         while (yPos < availableSize.Height && nextLine != null)
         {
-            VisualLine visualLine = GetVisualLine(nextLine.Number);
-            visualLine ??= BuildVisualLine(nextLine,
-                                             globalTextRunProperties, paragraphProperties,
-                                             elementGeneratorsArray, lineTransformersArray,
-                                             availableSize);
+            var visualLine = GetVisualLine(nextLine.Number) ??
+                BuildVisualLine(
+                    nextLine,
+                    globalTextRunProperties,
+                    paragraphProperties,
+                    elementGeneratorsArray,
+                    lineTransformersArray,
+                    availableSize);
 
             visualLine.VisualTop = scrollOffset.Y + yPos;
 
@@ -1083,7 +1089,7 @@ public class TextView : FrameworkElement, IScrollInfo, IWeakEventListener, IText
 
             yPos += visualLine.Height;
 
-            foreach (TextLine textLine in visualLine.TextLines)
+            foreach (var textLine in visualLine.TextLines)
             {
                 if (textLine.WidthIncludingTrailingWhitespace > maxWidth)
                 {
@@ -1120,7 +1126,7 @@ public class TextView : FrameworkElement, IScrollInfo, IWeakEventListener, IText
 
     #region BuildVisualLine
     private TextFormatter formatter;
-    internal NpcCache npcCache;
+    internal NonPrintablesCache nonPrintablesCache;
 
     private TextRunProperties CreateGlobalTextRunProperties()
     {

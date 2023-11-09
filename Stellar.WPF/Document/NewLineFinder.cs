@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Linq;
 using System.Text;
 
 namespace Stellar.WPF.Document;
@@ -78,14 +79,6 @@ internal static class NewLineFinder
     }
 
     /// <summary>
-    /// Gets whether the specified string is a newline sequence.
-    /// </summary>
-    public static bool IsNewLine(this string newLine)
-    {
-        return newLine == "\r\n" || newLine == "\n" || newLine == "\r";
-    }
-
-    /// <summary>
     /// Normalizes all new lines in <paramref name="input"/> to be <paramref name="newLine"/>.
     /// </summary>
     public static string? NormalizeNewLines(this string input, string newLine)
@@ -95,15 +88,15 @@ internal static class NewLineFinder
             return null;
         }
 
-        if (!IsNewLine(newLine))
+        if (!NewlineStrings.Contains(newLine))
         {
             throw new ArgumentException($"{nameof(newline)} must be a known new line sequence");
         }
 
-        var ds = Next(input, 0);
+        var segment = Next(input, 0);
 
         // the input does not contain any new lines
-        if (ds == SimpleSegment.Invalid)
+        if (segment == SimpleSegment.Invalid)
         {
             return input;
         }
@@ -113,13 +106,13 @@ internal static class NewLineFinder
 
         do
         {
-            b.Append(input, lastEndOffset, ds.Offset - lastEndOffset);
+            b.Append(input, lastEndOffset, segment.Offset - lastEndOffset);
             b.Append(newLine);
             
-            lastEndOffset = ds.EndOffset;
-            ds = Next(input, lastEndOffset);
+            lastEndOffset = segment.EndOffset;
+            segment = Next(input, lastEndOffset);
         }
-        while (ds != SimpleSegment.Invalid);
+        while (segment != SimpleSegment.Invalid);
         
         // remaining string (after last newline)
         b.Append(input, lastEndOffset, input.Length - lastEndOffset);

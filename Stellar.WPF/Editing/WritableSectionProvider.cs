@@ -7,11 +7,11 @@ using Stellar.WPF.Utilities;
 namespace Stellar.WPF.Editing;
 
 /// <summary>
-/// Fully editable <see cref="IEditableSectionProvider"/> implementation.
+/// Fully editable <see cref="ISectionProvider"/> implementation.
 /// </summary>
-sealed class EditableSectionProvider : IEditableSectionProvider
+sealed class WritableSectionProvider : ISectionProvider
 {
-    public static readonly EditableSectionProvider Instance = new();
+    public static readonly WritableSectionProvider Instance = new();
 
     public bool CanInsert(int offset) => true;
 

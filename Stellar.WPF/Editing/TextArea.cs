@@ -201,18 +201,18 @@ namespace Stellar.WPF.Editing
         {
             if (oldValue is not null)
             {
-                TextDocumentWeakEventManager.Changing.RemoveListener(oldValue, this);
-                TextDocumentWeakEventManager.Changed.RemoveListener(oldValue, this);
-                TextDocumentWeakEventManager.UpdateStarted.RemoveListener(oldValue, this);
-                TextDocumentWeakEventManager.UpdateFinished.RemoveListener(oldValue, this);
+                WPF.Document.WeakDocumentEventManager.Changing.RemoveListener(oldValue, this);
+                WPF.Document.WeakDocumentEventManager.Changed.RemoveListener(oldValue, this);
+                WPF.Document.WeakDocumentEventManager.UpdateStarted.RemoveListener(oldValue, this);
+                WPF.Document.WeakDocumentEventManager.UpdateFinished.RemoveListener(oldValue, this);
             }
             textView.Document = newValue;
             if (newValue is not null)
             {
-                TextDocumentWeakEventManager.Changing.AddListener(newValue, this);
-                TextDocumentWeakEventManager.Changed.AddListener(newValue, this);
-                TextDocumentWeakEventManager.UpdateStarted.AddListener(newValue, this);
-                TextDocumentWeakEventManager.UpdateFinished.AddListener(newValue, this);
+                WPF.Document.WeakDocumentEventManager.Changing.AddListener(newValue, this);
+                WPF.Document.WeakDocumentEventManager.Changed.AddListener(newValue, this);
+                WPF.Document.WeakDocumentEventManager.UpdateStarted.AddListener(newValue, this);
+                WPF.Document.WeakDocumentEventManager.UpdateFinished.AddListener(newValue, this);
             }
             // Reset caret location and selection: this is necessary because the caret/selection might be invalid
             // in the new document (e.g. if new document is shorter than the old document).
@@ -275,22 +275,22 @@ namespace Stellar.WPF.Editing
         /// <inheritdoc cref="IWeakEventListener.ReceiveWeakEvent"/>
         protected virtual bool ReceiveWeakEvent(Type managerType, object sender, EventArgs e)
         {
-            if (managerType == typeof(TextDocumentWeakEventManager.Changing))
+            if (managerType == typeof(Document.WeakDocumentEventManager.Changing))
             {
                 OnDocumentChanging();
                 return true;
             }
-            else if (managerType == typeof(TextDocumentWeakEventManager.Changed))
+            else if (managerType == typeof(Document.WeakDocumentEventManager.Changed))
             {
                 OnDocumentChanged((DocumentChangeEventArgs)e);
                 return true;
             }
-            else if (managerType == typeof(TextDocumentWeakEventManager.UpdateStarted))
+            else if (managerType == typeof(Document.WeakDocumentEventManager.UpdateStarted))
             {
                 OnUpdateStarted();
                 return true;
             }
-            else if (managerType == typeof(TextDocumentWeakEventManager.UpdateFinished))
+            else if (managerType == typeof(Document.WeakDocumentEventManager.UpdateFinished))
             {
                 OnUpdateFinished();
                 return true;
@@ -599,7 +599,7 @@ namespace Stellar.WPF.Editing
 
             allowCaretOutsideSelection++;
             
-            return new FirstCallDisposable(
+            return new OnDisposeCall(
                 delegate
                 {
                     VerifyAccess();
@@ -654,12 +654,12 @@ namespace Stellar.WPF.Editing
             }
         }
 
-        IEditableSectionProvider editableSectionProvider = Editing.EditableSectionProvider.Instance;
+        ISectionProvider editableSectionProvider = Editing.WritableSectionProvider.Instance;
 
         /// <summary>
         /// Gets/Sets an object that provides read-only sections for the text area.
         /// </summary>
-        public IEditableSectionProvider EditableSectionProvider
+        public ISectionProvider EditableSectionProvider
         {
             get => editableSectionProvider;
             set

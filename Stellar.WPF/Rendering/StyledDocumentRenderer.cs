@@ -48,9 +48,9 @@ public class StyledDocumentRenderer : DocumentRenderer
     {
     }
 
-    private void textView_DocumentChanged(object sender, EventArgs e)
+    private void DocumentChanged(object? sender, EventArgs e)
     {
-        var textView = (TextView)sender;
+        var textView = (TextView)sender!;
         
         UnregisterServices(textView);
         RegisterServices(textView);
@@ -137,9 +137,9 @@ public class StyledDocumentRenderer : DocumentRenderer
         base.OnAttachTo(textView);
         this.textView = textView;
         
-        textView.DocumentChanged += textView_DocumentChanged;
-        textView.VisualLineConstructionStarting += textView_VisualLineConstructionStarting;
-        textView.VisualLinesChanged += textView_VisualLinesChanged;
+        textView.DocumentChanged += DocumentChanged;
+        textView.VisualLineConstructionStarting += VisualLineConstructionStarting;
+        textView.VisualLinesChanged += VisualLinesChanged;
         
         RegisterServices(textView);
     }
@@ -149,9 +149,9 @@ public class StyledDocumentRenderer : DocumentRenderer
     {
         UnregisterServices(textView);
 
-        textView.DocumentChanged -= textView_DocumentChanged;
-        textView.VisualLineConstructionStarting -= textView_VisualLineConstructionStarting;
-        textView.VisualLinesChanged -= textView_VisualLinesChanged;
+        textView.DocumentChanged -= DocumentChanged;
+        textView.VisualLineConstructionStarting -= VisualLineConstructionStarting;
+        textView.VisualLinesChanged -= VisualLinesChanged;
         
         base.OnDetachFrom(textView);
         this.textView = null;
@@ -159,7 +159,7 @@ public class StyledDocumentRenderer : DocumentRenderer
 
     private bool isInStylingGroup;
 
-    private void textView_VisualLineConstructionStarting(object sender, VisualLineConstructionStartEventArgs e)
+    private void VisualLineConstructionStarting(object? sender, VisualLineConstructionStartEventArgs e)
     {
         if (styler != null)
         {
@@ -185,7 +185,7 @@ public class StyledDocumentRenderer : DocumentRenderer
         }
     }
 
-    private void textView_VisualLinesChanged(object sender, EventArgs e)
+    private void VisualLinesChanged(object? sender, EventArgs e)
     {
         if (styler != null && isInStylingGroup)
         {

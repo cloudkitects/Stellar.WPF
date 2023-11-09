@@ -6,11 +6,11 @@ using Stellar.WPF.Document;
 namespace Stellar.WPF.Editing;
 
 /// <summary>
-/// Non-editable <see cref="IEditableSectionProvider"/> implementation.
+/// Non-editable <see cref="ISectionProvider"/> implementation.
 /// </summary>
-internal class ReadOnlySectionProvider : IEditableSectionProvider
+internal class ReadableSectionProvider : ISectionProvider
 {
-    public static readonly ReadOnlySectionProvider Instance = new();
+    public static readonly ReadableSectionProvider Instance = new();
 
     public bool CanInsert(int offset) => false;
 

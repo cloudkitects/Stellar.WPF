@@ -8,11 +8,11 @@ namespace Stellar.WPF.Utilities
     /// action is invoked at most once despite Dispose being called by
     /// multiple threads,
     /// </summary>
-    internal sealed class FirstCallDisposable : IDisposable
+    internal sealed class OnDisposeCall : IDisposable
     {
         private Action action;
 
-        public FirstCallDisposable(Action action)
+        public OnDisposeCall(Action action)
         {
             this.action = action ?? throw new ArgumentNullException(nameof(action));
         }

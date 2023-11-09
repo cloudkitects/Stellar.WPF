@@ -5,9 +5,9 @@ using Stellar.WPF.Document;
 namespace Stellar.WPF.Editing;
 
 /// <summary>
-/// Determines whether the document can be modified.
+/// A contract for determining whether a document section is readable or writable.
 /// </summary>
-public interface IEditableSectionProvider
+public interface ISectionProvider
 {
     /// <summary>
     /// Gets whether insertion is possible at the specified offset.

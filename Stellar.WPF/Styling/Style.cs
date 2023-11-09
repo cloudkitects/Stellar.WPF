@@ -380,15 +380,15 @@ public class Style : ISerializable, IFreezable, ICloneable, IEquatable<Style>
     public bool IsFrozen => frozen;
 
     /// <summary>
-    /// Clones this instance (and unfreezes the clone).
+    /// Returns a thawed clone of this instance.
     /// </summary>
     public virtual Style Clone()
     {
-        var c = (Style)MemberwiseClone();
+        var clone = (Style)MemberwiseClone();
         
-        c.frozen = false;
+        clone.frozen = false;
         
-        return c;
+        return clone;
     }
 
     object ICloneable.Clone()

@@ -156,7 +156,7 @@ public sealed class Document : IDocument, INotifyPropertyChanged
     {
     }
 
-    // gets the text from a text source, directly retrieving the underlying rope where possible
+    // gets the text from a text source, directly retrieving the underlying tree where possible
     private static IEnumerable<char> GetTextFromTextSource(ITextSource textSource)
     {
         if (textSource == null)
@@ -478,7 +478,7 @@ public sealed class Document : IDocument, INotifyPropertyChanged
     {
         BeginUpdate();
 
-        return new FirstCallDisposable(EndUpdate);
+        return new OnDisposeCall(EndUpdate);
     }
 
     /// <summary>
@@ -666,7 +666,7 @@ public sealed class Document : IDocument, INotifyPropertyChanged
     /// <param name="offset">The starting offset of the text to be replaced.</param>
     /// <param name="length">The length of the text to be replaced.</param>
     /// <param name="text">The new text.</param>
-    public void Replace(int offset, int length, ITextSource text) => Replace(offset, length, text);
+    public void Replace(int offset, int length, ITextSource text) => Replace(offset, length, text, null!);
 
     /// <summary>
     /// Replace text within the document.
@@ -786,12 +786,8 @@ public sealed class Document : IDocument, INotifyPropertyChanged
     /// <param name="changeOffsetColl">How to map old text offsets to the new text.</param>
     public void Replace(int offset, int length, ITextSource text, ChangeOffsetCollection changeOffsetColl = null!)
     {
-        if (text == null)
-        {
-            throw new ArgumentNullException(nameof(text));
-        }
-
-        text = text.CreateSnapshot();
+        text = (text ?? throw new ArgumentNullException(nameof(text)))
+            .CreateSnapshot();
 
         changeOffsetColl?.Freeze();
 
@@ -856,7 +852,7 @@ public sealed class Document : IDocument, INotifyPropertyChanged
         }
         else
         {
-            // use a rope if the removed string is long
+            // use a tree if the removed string is long
             removedText = new TextSource(charTree.Slice(offset, length));
         }
 

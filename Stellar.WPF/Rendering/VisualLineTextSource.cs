@@ -105,7 +105,7 @@ sealed class VisualLineTextSource : TextSource, ITextRunContext
             }
         }
 
-        return new FormattedTextRun(new FormattedTextElement(TextView.npcCache.GetText(newlineText, this)!, 0), GlobalTextRunProperties);
+        return new FormattedTextRun(new FormattedTextElement(TextView.nonPrintablesCache.GetText(newlineText, this)!, 0), GlobalTextRunProperties);
     }
 
     public override TextSpan<CultureSpecificCharacterBufferRange> GetPrecedingText(int textSourceCharacterIndexLimit)

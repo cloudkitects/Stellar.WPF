@@ -31,7 +31,7 @@ class TextAreaAutomationPeer : FrameworkElementAutomationPeer, IValueProvider, I
 
     internal IRawElementProviderSimple Provider => ProviderFromPeer(this);
 
-    public bool IsReadOnly => TextArea.EditableSectionProvider == EditableSectionProvider.Instance;
+    public bool IsReadOnly => TextArea.EditableSectionProvider == WritableSectionProvider.Instance;
 
     public void SetValue(string value) => TextArea.Document.Text = value;
 

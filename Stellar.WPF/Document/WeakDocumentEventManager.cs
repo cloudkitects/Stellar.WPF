@@ -3,9 +3,9 @@
 namespace Stellar.WPF.Document;
 
 /// <summary>
-/// Contains weak event managers for the TextDocument events.
+/// Contains weak event managers for document events.
 /// </summary>
-public static class TextDocumentWeakEventManager
+public static class WeakDocumentEventManager
 {
 	/// <summary>
 	/// Weak event manager for the <see cref="TextDocument.UpdateStarted"/> event.

@@ -809,8 +809,8 @@ public sealed class Tree<T> : IList<T>, ICloneable
     /// Creates a string from the tree. Runs in O(N).
     /// </summary>
     /// <returns>A string consisting of all elements in the tree as comma-separated list in {}.
-    /// As a special case, Rope&lt;char&gt; will return its contents as string without any additional separators or braces,
-    /// so it can be used like StringBuilder.ToString().</returns>
+    /// As a special case, Tree&lt;char&gt; will return its contents as string without any additional separators or braces,
+    /// so it can be used in StringBuilder.ToString().</returns>
     /// <remarks>
     /// This method counts as a read access and may be called concurrently to other read accesses.
     /// </remarks>

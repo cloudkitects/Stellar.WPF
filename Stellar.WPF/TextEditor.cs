@@ -105,7 +105,7 @@ public class TextEditor : Control, ITextEditorComponent, IServiceProvider, IWeak
     {
         if (oldValue is not null)
         {
-            TextDocumentWeakEventManager.TextChanged.RemoveListener(oldValue, this);
+            WPF.Document.WeakDocumentEventManager.TextChanged.RemoveListener(oldValue, this);
             PropertyChangedEventManager.RemoveListener(oldValue.UndoStack, this, "IsOriginalFile");
         }
 
@@ -113,7 +113,7 @@ public class TextEditor : Control, ITextEditorComponent, IServiceProvider, IWeak
         
         if (newValue is not null)
         {
-            TextDocumentWeakEventManager.TextChanged.AddListener(newValue, this);
+            WPF.Document.WeakDocumentEventManager.TextChanged.AddListener(newValue, this);
             PropertyChangedEventManager.AddListener(newValue.UndoStack, this, "IsOriginalFile");
         }
 
@@ -176,7 +176,7 @@ public class TextEditor : Control, ITextEditorComponent, IServiceProvider, IWeak
             return true;
         }
         
-        if (managerType == typeof(TextDocumentWeakEventManager.TextChanged))
+        if (managerType == typeof(Document.WeakDocumentEventManager.TextChanged))
         {
             OnTextChanged(e);
             
@@ -369,8 +369,8 @@ public class TextEditor : Control, ITextEditorComponent, IServiceProvider, IWeak
         if (d is TextEditor editor)
         {
             editor.TextArea.EditableSectionProvider = (bool)e.NewValue
-                ? EditableSectionProvider.Instance
-                : ReadOnlySectionProvider.Instance;
+                ? WritableSectionProvider.Instance
+                : ReadableSectionProvider.Instance;
 
             var peer = TextEditorAutomationPeer.FromElement(editor) as TextEditorAutomationPeer;
             
