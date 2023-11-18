@@ -59,7 +59,7 @@ internal sealed class LineManager
 
         while (nextLine != SimpleSegment.Invalid)
         {
-            line.ExactLength = nextLine.Offset + nextLine.Length - lastSeparatorEnd;
+            line.TextLength = nextLine.Offset + nextLine.Length - lastSeparatorEnd;
             line.SeparatorLength = nextLine.Length;
 
             lines.Add(line);
@@ -71,7 +71,7 @@ internal sealed class LineManager
             nextLine = NewLineFinder.Next(document, lastSeparatorEnd);
         }
 
-        line.ExactLength = document.TextLength - lastSeparatorEnd;
+        line.TextLength = document.TextLength - lastSeparatorEnd;
 
         lines.Add(line);
 
@@ -97,7 +97,7 @@ internal sealed class LineManager
         var startLine = lineTree.LineBy(offset);
         int startLineOffset = startLine.Offset;
 
-        Debug.Assert(offset < startLineOffset + startLine.ExactLength);
+        Debug.Assert(offset < startLineOffset + startLine.TextLength);
 
         if (offset > startLineOffset + startLine.Length)
         {
@@ -105,7 +105,7 @@ internal sealed class LineManager
             // we are deleting starting in the middle of a separator
 
             // remove last separator part
-            SetLineLength(startLine, startLine.ExactLength - 1);
+            SetLineLength(startLine, startLine.TextLength - 1);
 
             // remove remaining text
             Remove(offset, length - 1);
@@ -113,18 +113,18 @@ internal sealed class LineManager
             return;
         }
 
-        if (offset + length < startLineOffset + startLine.ExactLength)
+        if (offset + length < startLineOffset + startLine.TextLength)
         {
             // just removing a part of this line
             //startLine.RemovedLinePart(ref deferredEventList, offset - startLineOffset, length);
-            SetLineLength(startLine, startLine.ExactLength - length);
+            SetLineLength(startLine, startLine.TextLength - length);
 
             return;
         }
 
         // merge startLine with another line because startLine's delimiter was deleted
         // possibly remove lines in between if multiple delimiters were deleted
-        var charactersRemovedInStartLine = startLineOffset + startLine.ExactLength - offset;
+        var charactersRemovedInStartLine = startLineOffset + startLine.TextLength - offset;
 
         Debug.Assert(charactersRemovedInStartLine > 0);
 
@@ -134,12 +134,12 @@ internal sealed class LineManager
         {
             // special case: we are removing a part of the last line up to the
             // end of the document
-            SetLineLength(startLine, startLine.ExactLength - length);
+            SetLineLength(startLine, startLine.TextLength - length);
 
             return;
         }
         var endLineOffset = endLine.Offset;
-        var charactersLeftInEndLine = endLineOffset + endLine.ExactLength - (offset + length);
+        var charactersLeftInEndLine = endLineOffset + endLine.TextLength - (offset + length);
 
         // remove all lines between startLine (excl.) and endLine (incl.)
         var tmp = startLine.NextLine;
@@ -155,7 +155,7 @@ internal sealed class LineManager
 
         } while (lineToRemove != endLine);
 
-        SetLineLength(startLine, startLine.ExactLength - charactersRemovedInStartLine + charactersLeftInEndLine);
+        SetLineLength(startLine, startLine.TextLength - charactersRemovedInStartLine + charactersLeftInEndLine);
     }
 
     private void RemoveLine(Line lineToRemove)
@@ -176,7 +176,7 @@ internal sealed class LineManager
         var line = lineTree.LineBy(offset);
         var lineOffset = line.Offset;
 
-        Debug.Assert(offset <= lineOffset + line.ExactLength);
+        Debug.Assert(offset <= lineOffset + line.TextLength);
 
         if (offset > lineOffset + line.Length)
         {
@@ -184,7 +184,7 @@ internal sealed class LineManager
             // we are inserting in the middle of a delimiter
 
             // shorten line
-            SetLineLength(line, line.ExactLength - 1);
+            SetLineLength(line, line.TextLength - 1);
 
             // add new line
             line = InsertLineAfter(line, 1);
@@ -197,7 +197,7 @@ internal sealed class LineManager
         {
             // no newline is being inserted, all text is inserted in a single line
             //line.InsertedLinePart(offset - line.Offset, text.Length);
-            SetLineLength(line, line.ExactLength + text.TextLength);
+            SetLineLength(line, line.TextLength + text.TextLength);
             return;
         }
         //DocumentLine firstLine = line;
@@ -209,7 +209,7 @@ internal sealed class LineManager
             // split line segment at line delimiter
             int lineBreakOffset = offset + ds.Offset + ds.Length;
             lineOffset = line.Offset;
-            int lengthAfterInsertionPos = lineOffset + line.ExactLength - (offset + lastDelimiterEnd);
+            int lengthAfterInsertionPos = lineOffset + line.TextLength - (offset + lastDelimiterEnd);
             line = SetLineLength(line, lineBreakOffset - lineOffset);
             var newLine = InsertLineAfter(line, lengthAfterInsertionPos);
             newLine = SetLineLength(newLine, lengthAfterInsertionPos);
@@ -224,7 +224,7 @@ internal sealed class LineManager
         if (lastDelimiterEnd != text.TextLength)
         {
             //line.InsertedLinePart(0, text.Length - lastDelimiterEnd);
-            SetLineLength(line, line.ExactLength + text.TextLength - lastDelimiterEnd);
+            SetLineLength(line, line.TextLength + text.TextLength - lastDelimiterEnd);
         }
     }
 
@@ -253,7 +253,7 @@ internal sealed class LineManager
     {
         //			changedLines.Add(line);
         //			deletedOrChangedLines.Add(line);
-        int delta = newTotalLength - line.ExactLength;
+        int delta = newTotalLength - line.TextLength;
         if (delta != 0)
         {
             foreach (ILineTracker lt in lineTrackers)
@@ -261,7 +261,7 @@ internal sealed class LineManager
                 lt.ResetLength(line, newTotalLength);
             }
 
-            line.ExactLength = newTotalLength;
+            line.TextLength = newTotalLength;
             LineTree.UpdateNodeData(line);
         }
         // determine new SeparatorLength
@@ -288,7 +288,7 @@ internal sealed class LineManager
                     // we need to join this line with the previous line
                     var previousLine = line.PreviousLine;
                     RemoveLine(line);
-                    return SetLineLength(previousLine, previousLine.ExactLength + 1);
+                    return SetLineLength(previousLine, previousLine.TextLength + 1);
                 }
                 else
                 {

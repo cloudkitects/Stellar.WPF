@@ -8,7 +8,7 @@ public interface ILine : ISegment
     /// <summary>
     /// Gets the length of this line, including the line separator.
     /// </summary>
-    int ExactLength { get; }
+    int TextLength { get; }
 
     /// <summary>
     /// Gets the length of the line separator.

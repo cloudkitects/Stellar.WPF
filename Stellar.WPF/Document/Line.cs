@@ -1,6 +1,5 @@
 ﻿using System;
 using System.Diagnostics;
-using System.Globalization;
 
 namespace Stellar.WPF.Document;
 
@@ -21,15 +20,51 @@ namespace Stellar.WPF.Document;
 /// </remarks>
 public sealed partial class Line : ILine
 {
-    #region Constructor
-#if DEBUG
-    // Required for thread safety check which is done only in debug builds.
-    // To save space, we don't store the document reference in release builds as we don't need it there.
-    private readonly Document document;
-#endif
-
+    #region fields
+    /// <summary>
+    /// The text length of this line, set by the tree.
+    /// </summary>
+    private int textLength;
+    
+    /// <summary>
+    /// The length of a line separator--either 1 or 2.
+    /// </summary>
+    private byte separatorLength;
+    
+    /// <summary>
+    /// Whether this line has been removed from the line tree.
+    /// </summary>
     internal bool isDeleted;
 
+    /// <summary>
+    /// A relative to this line in the tree.
+    /// </summary>
+    internal Line? left, right, parent;
+
+    /// <summary>
+    /// Either <see cref="LineTree.RED"/> or <see cref="LineTree.BLACK"/>. 
+    /// </summary>
+    internal bool color;
+
+    /// <summary>
+    /// The number of lines in this branch.
+    /// Invariant: lineCount = 1 + left.lineCount + right.lineCount
+    /// </summary>
+    internal int lineCount;
+
+    /// <summary>
+    /// The total text length of this branch.
+    /// Invariant: totalLength = left.totalLength + Line.ExactLength + right.totalLength
+    /// </summary>
+    internal int totalLength;
+
+#if DEBUG
+    // a reference for thread safety checks only
+    private readonly Document document;
+#endif
+    #endregion
+
+    #region constructor
     internal Line(Document document)
     {
 #if DEBUG
@@ -38,58 +73,9 @@ public sealed partial class Line : ILine
         this.document = document;
 #endif
     }
-
-    [Conditional("DEBUG")]
-    private void DebugVerifyAccess()
-    {
-#if DEBUG
-        document.DebugVerifyAccess();
-#endif
-    }
     #endregion
 
-    #region Tree members
-    /// <summary>
-    /// Relative lines.
-    /// </summary>
-    internal Line? left, right, parent;
-
-    internal bool color;
-
-    /// <summary>
-    /// The number of lines in this branch.
-    /// Invariant:
-    ///   lineCount = 1 + left.lineCount + right.lineCount
-    /// </summary>
-    internal int lineCount;
-
-    /// <summary>
-    /// The total text length of this branch.
-    /// Invariant:
-    ///   branchLength = left.branchLength + documentLine.ExactLength + right.branchLength
-    /// </summary>
-    internal int totalLength;
-
-    /// <summary>
-    /// Resets the line to enable its reuse after a document rebuild.
-    /// </summary>
-    internal void Reset()
-    {
-        exactLength = separatorLength = 0;
-        isDeleted = color = false;
-        left = null!;
-        right = null!;
-        parent = null!;
-    }
-
-    internal Line Init()
-    {
-        lineCount = 1;
-        totalLength = ExactLength;
-
-        return this;
-    }
-
+    #region props
     internal Line LeftMost
     {
         get
@@ -157,14 +143,9 @@ public sealed partial class Line : ILine
     /// <exception cref="InvalidOperationException">The line was deleted.</exception>
     /// <remarks>EndOffset = <see cref="Offset"/> + <see cref="Length"/>.</remarks>
     public int EndOffset => Offset + Length;
-    #endregion
-
-    #region Length
-    private int exactLength;
-    private byte separatorLength;
 
     /// <summary>
-    /// The length of this line. O(1)
+    /// The text length of this line without the line separator. O(1)
     /// </summary>
     /// <remarks>Accessible after deletion.</remarks>
     public int Length
@@ -173,7 +154,7 @@ public sealed partial class Line : ILine
         {
             DebugVerifyAccess();
 
-            return exactLength - separatorLength;
+            return textLength - separatorLength;
         }
     }
 
@@ -181,18 +162,18 @@ public sealed partial class Line : ILine
     /// The length of this line including the line separator. O(1)
     /// </summary>
     /// <remarks>Accessible after deletion.</remarks>
-    public int ExactLength
+    public int TextLength
     {
         get
         {
             DebugVerifyAccess();
 
-            return exactLength;
+            return textLength;
         }
         internal set
         {
             // set by the line tree
-            exactLength = value;
+            textLength = value;
         }
     }
 
@@ -217,9 +198,7 @@ public sealed partial class Line : ILine
             separatorLength = (byte)value;
         }
     }
-    #endregion
 
-    #region Previous / Next Line
     /// <summary>
     /// Gets the next line in the document.
     /// </summary>
@@ -281,7 +260,35 @@ public sealed partial class Line : ILine
     ILine ILine.PreviousLine => PreviousLine;
     #endregion
 
-    #region ToString
+    #region methods
+    [Conditional("DEBUG")]
+    private void DebugVerifyAccess()
+    {
+#if DEBUG
+        document.DebugVerifyAccess();
+#endif
+    }
+
+    /// <summary>
+    /// Resets the line to enable its reuse after a document rebuild.
+    /// </summary>
+    internal void Reset()
+    {
+        textLength = separatorLength = 0;
+        isDeleted = color = false;
+        left = null!;
+        right = null!;
+        parent = null!;
+    }
+
+    internal Line Init()
+    {
+        lineCount = 1;
+        totalLength = TextLength;
+
+        return this;
+    }
+
     /// <summary>
     /// Gets a string with debug output showing the line number and offset.
     /// Does not include the line's text.

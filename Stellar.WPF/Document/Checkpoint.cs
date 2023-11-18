@@ -35,7 +35,7 @@ internal sealed class Checkpoint : ICheckpoint
         return checkpoint is Checkpoint other && provider == other.provider;
     }
 
-    public int CompareAge(ICheckpoint checkpoint)
+    public int GetDistanceTo(ICheckpoint checkpoint)
     {
         if (checkpoint is null)
         {
@@ -52,9 +52,9 @@ internal sealed class Checkpoint : ICheckpoint
         return Math.Sign(unchecked(id - other.id));
     }
 
-    public IEnumerable<TextChangeEventArgs> GetChangesTo(ICheckpoint checkpoint)
+    public IEnumerable<TextChangeEventArgs> GetChangesUpTo(ICheckpoint checkpoint)
     {
-        var result = CompareAge(checkpoint);
+        var result = GetDistanceTo(checkpoint);
 
         var other = (Checkpoint)checkpoint;
 
@@ -82,11 +82,11 @@ internal sealed class Checkpoint : ICheckpoint
         }
     }
 
-    public int MoveOffsetTo(ICheckpoint checkpoint, int oldOffset, AnchorMovementType movement)
+    public int GetOffsetTo(ICheckpoint checkpoint, int oldOffset, AnchorMovementType movement)
     {
         var offset = oldOffset;
 
-        foreach (var change in GetChangesTo(checkpoint))
+        foreach (var change in GetChangesUpTo(checkpoint))
         {
             offset = change.ComputeOffset(offset, movement);
         }

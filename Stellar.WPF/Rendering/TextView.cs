@@ -700,7 +700,7 @@ public class TextView : FrameworkElement, IScrollInfo, IWeakEventListener, IText
         {
             VisualLine visualLine = allVisualLines[i];
             int lineStart = visualLine.FirstLine.Offset;
-            int lineEnd = visualLine.LastLine.Offset + visualLine.LastLine.ExactLength;
+            int lineEnd = visualLine.LastLine.Offset + visualLine.LastLine.TextLength;
             if (offset <= lineEnd)
             {
                 changedSomethingBeforeOrInLine = true;

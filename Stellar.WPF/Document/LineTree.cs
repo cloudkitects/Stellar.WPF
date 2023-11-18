@@ -39,7 +39,7 @@ internal sealed class LineTree : IList<Line>
     internal static void UpdateNodeData(Line line)
     {
         var totalCount = 1;
-        var totalLength = line.ExactLength;
+        var totalLength = line.TextLength;
 
         if (line.left is not null)
         {
@@ -223,7 +223,7 @@ internal sealed class LineTree : IList<Line>
                     offset -= line.left.totalLength;
                 }
 
-                offset -= line.ExactLength;
+                offset -= line.TextLength;
 
                 if (offset < 0)
                 {
@@ -250,7 +250,7 @@ internal sealed class LineTree : IList<Line>
                     offset += line.parent.left.totalLength;
                 }
 
-                offset += line.parent.ExactLength;
+                offset += line.parent.TextLength;
             }
 
             line = line.parent;
@@ -275,7 +275,7 @@ internal sealed class LineTree : IList<Line>
     private void ValidateData(Line node)
     {
         int totalCount = 1;
-        int totalLength = node.ExactLength;
+        int totalLength = node.TextLength;
 
         if (node.left is not null)
         {
@@ -389,7 +389,7 @@ internal sealed class LineTree : IList<Line>
     {
         Line newLine = new(document)
         {
-            ExactLength = totalLength
+            TextLength = totalLength
         };
 
         InsertAfter(line, newLine);

@@ -18,20 +18,19 @@ public class Style : ISerializable, IFreezable, ICloneable, IEquatable<Style>
 {
     #region fields and props
     internal static readonly Style Empty = new Style().Freeze<Style>();
-
-    string name = string.Empty;
-    FontFamily? fontFamily = null;
-    int? fontSize;
-    FontWeight? fontWeight;
-    FontStyle? fontStyle;
-    bool? underline;
-    bool? strikethrough;
-    Brush? foreground;
-    Brush? background;
-    bool frozen;
+    private string name = string.Empty;
+    private FontFamily? fontFamily = null;
+    private int? fontSize;
+    private FontWeight? fontWeight;
+    private FontStyle? fontStyle;
+    private bool? underline;
+    private bool? strikethrough;
+    private Brush? foreground;
+    private Brush? background;
+    private bool frozen;
 
     /// <summary>
-    /// Gets/Sets the name of the color.
+    /// Gets/Sets the name of the style.
     /// </summary>
     public string Name
     {

@@ -24,23 +24,23 @@ public class WeakReferenceTests
     // Use separate no-inline method so that the JIT can't keep a strong
     // reference to the text view alive past this method.
     [MethodImpl(MethodImplOptions.NoInlining)]
-    private static WeakReference TextViewWeakReference(Document.Document document = null!) => new(document is null
+    private static WeakReference TextViewWeakReference(WPF.Document.Document document = null!) => new(document is null
             ? new TextView()
             : new TextView { Document = document });
 
     [MethodImpl(MethodImplOptions.NoInlining)]
-    private static WeakReference TextAreaWeakReference(Document.Document document = null!) => new(document is null
+    private static WeakReference TextAreaWeakReference(WPF.Document.Document document = null!) => new(document is null
         ? new TextArea()
         : new TextArea { Document = document });
 
     [MethodImpl(MethodImplOptions.NoInlining)]
-    private static WeakReference TextEditorWeakReference(Document.Document document = null!) => new(document is null
+    private static WeakReference TextEditorWeakReference(WPF.Document.Document document = null!) => new(document is null
         ? new TextEditor()
         : new TextEditor { Document = document });
 
     // using a method to ensure the local variables can be garbage collected after the method returns
     [MethodImpl(MethodImplOptions.NoInlining)]
-    private static WeakReference MarginWeakReference(Document.Document Document)
+    private static WeakReference MarginWeakReference(WPF.Document.Document Document)
     {
         var textView = new TextView() { Document = Document };
 
@@ -63,7 +63,7 @@ public class WeakReferenceTests
     [WpfFact]
     public void TextViewAndLineTrackersAreCollected()
     {
-        var document = new Document.Document();
+        var document = new WPF.Document.Document();
 
         Assert.Equal(0, document.LineTrackers.Count);
 
@@ -87,7 +87,7 @@ public class WeakReferenceTests
     [WpfFact]
     public void TextAreaIsCollected()
     {
-        var document = new Document.Document();
+        var document = new WPF.Document.Document();
         var textArea = TextAreaWeakReference(document);
 
         Assert.True(textArea.IsAlive);
@@ -103,7 +103,7 @@ public class WeakReferenceTests
     [WpfFact]
     public void TextEditorIsCollected()
     {
-        var document = new Document.Document();
+        var document = new WPF.Document.Document();
         var textEditor = TextEditorWeakReference(document);
 
         CollectGarbage();
@@ -116,7 +116,7 @@ public class WeakReferenceTests
     [WpfFact]
     public void MarginIsCollected()
     {
-        var document = new Document.Document();
+        var document = new WPF.Document.Document();
 
         var margin = MarginWeakReference(document);
 

@@ -23,7 +23,7 @@ public interface ISyntax
     /// <see langword="TODO"></see>: this is implemented in &lt;string, ISyntax&gt; dictionaries, consider deprecating.
     /// </summary>
     /// <returns>The rule set, or null if it is not found.</returns>
-    RuleSet GetNamedRuleSet(string name);
+    RuleSet GetRuleSet(string name);
 
     /// <summary>
     /// Get a style by name.
