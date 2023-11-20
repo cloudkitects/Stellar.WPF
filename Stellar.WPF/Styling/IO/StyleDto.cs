@@ -3,12 +3,13 @@ using YamlDotNet.Serialization;
 
 namespace Stellar.WPF.Styling.IO;
 
-public class StyleDto
+public class StyleDto : IAnchoredObject
 {
     /// <summary>
     /// Gets/Sets the name of the style.
     /// </summary>
-    public string? Name {  get; set; }
+    [YamlIgnore]
+    public string? Name { get; set; }
 
     /// <summary>
     /// Gets/sets the font family. Null if the style does not change the font style.

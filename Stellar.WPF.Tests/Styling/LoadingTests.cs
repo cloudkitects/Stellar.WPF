@@ -21,7 +21,7 @@ styles:
 
         Assert.NotNull(syntax);
         Assert.Equal("C#", syntax.Name);
-        //Assert.Equal("comment", syntax.Styles[0].Name);
+        Assert.Equal("comment", syntax.Styles[0].Name);
         Assert.Equal("Green", syntax.Styles[0].Foreground!);
         Assert.Equal("extraLight", syntax.Styles[1].FontWeight!);
         Assert.Equal("italic", syntax.Styles[1].FontStyle!);

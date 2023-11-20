@@ -9,6 +9,7 @@ namespace Stellar.WPF.Styling.IO;
 /// </summary>
 public class SyntaxDto
 {
+    
     public string? Name { get; set; }
 
     public IList<string> Extensions { get; private set; }

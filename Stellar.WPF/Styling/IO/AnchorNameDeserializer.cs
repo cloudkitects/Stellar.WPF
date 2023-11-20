@@ -9,40 +9,38 @@ namespace Stellar.WPF.Styling.IO;
 
 public interface IAnchoredObject
 {
-    string Name { get; set; }
+    string? Name { get; set; }
 }
 
-public class AnchorNameDeserializer : INodeDeserializer
+public class AnchorNameDeserializer : IValueDeserializer
 {
-    private readonly INodeDeserializer _deserializer;
+    private readonly IValueDeserializer innerValueDeserializer;
 
-    public AnchorNameDeserializer(INodeDeserializer deserializer)
+    public AnchorNameDeserializer(IValueDeserializer innerValueDeserializer)
     {
-        _deserializer = deserializer;
+        this.innerValueDeserializer = innerValueDeserializer;
     }
 
-    bool INodeDeserializer.Deserialize(IParser parser, Type expectedType, Func<IParser, Type, object?> nestedObjectDeserializer, out object? value)
+    public object DeserializeValue(IParser parser, Type expectedType, SerializerState state, IValueDeserializer nestedObjectDeserializer)
     {
-        var nodeEvent = parser?.Current as NodeEvent;
-
-        if (nodeEvent is null || nodeEvent.Anchor.IsEmpty)
+        string? name = null;
+        
+        if (parser.Current is NodeEvent nodeEvent && !nodeEvent.Anchor.IsEmpty)
         {
-            value = null;
-            
-            return false;
+            name = nodeEvent.Anchor.Value;
         }
         
-        var anchor = nodeEvent?.Anchor.Value;
-
-        bool success = _deserializer.Deserialize(parser!, expectedType, nestedObjectDeserializer, out var result);
-
-        if (result is IAnchoredObject anchoredObject && anchor is not null)
+        var result = innerValueDeserializer.DeserializeValue(parser, expectedType, state, nestedObjectDeserializer);
+        
+        if (name is not null)
         {
-            anchoredObject.Name = anchor;
+            if (result is IAnchoredObject anchored)
+            {
+                anchored.Name = name;
+            }
         }
-        
-        value = result;
-        
-        return success;
+
+        return result!;
     }
 }
+

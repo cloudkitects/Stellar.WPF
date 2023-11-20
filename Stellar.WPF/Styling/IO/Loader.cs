@@ -8,14 +8,15 @@ public static class Loader
 {
     public static SyntaxDto Load(string input)
     {
-        var deserializer = new DeserializerBuilder()
-                .WithNamingConvention(CamelCaseNamingConvention.Instance)
-                .Build();
-
         //var deserializer = new DeserializerBuilder()
-        //    .WithNamingConvention(CamelCaseNamingConvention.Instance)
-        //    .WithNodeDeserializer(inner => new AnchorNameDeserializer(inner), s => s.InsteadOf<ObjectNodeDeserializer>())
-        //    .Build();
+        //        .WithNamingConvention(CamelCaseNamingConvention.Instance)
+        //        .Build();
+
+        var valueDeserializer = new DeserializerBuilder()
+                    .WithNamingConvention(CamelCaseNamingConvention.Instance)
+                    .BuildValueDeserializer();
+
+        var deserializer = Deserializer.FromValueDeserializer(new AnchorNameDeserializer(valueDeserializer));
 
         return deserializer.Deserialize<SyntaxDto>(input);
     }
