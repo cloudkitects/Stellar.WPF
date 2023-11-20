@@ -1,4 +1,6 @@
-﻿namespace Stellar.WPF.Tests.Styling;
+﻿using Stellar.WPF.Styling.IO;
+
+namespace Stellar.WPF.Tests.Styling;
 
 public class LoadingTests
 {
@@ -6,17 +8,22 @@ public class LoadingTests
     public void Loads()
     {
         var input = @"---
-Name: C#
-Extensions: .cs,cshtml
-Styles:
-  - Name: comment
-    foreground: Green";
+name: C#
+extensions: [.cs,cshtml]
+styles:
+  - &comment
+    foreground: Green
+  - &allprops
+    fontWeight: extraLight
+    fontStyle: italic";
 
-        var syntax = WPF.Styling.IO.Loader.Load(input);
+        var syntax = Loader.Load(input);
 
         Assert.NotNull(syntax);
         Assert.Equal("C#", syntax.Name);
-        Assert.Equal("C#", syntax.Styles[0].Foreground.ToString());
-
+        //Assert.Equal("comment", syntax.Styles[0].Name);
+        Assert.Equal("Green", syntax.Styles[0].Foreground!);
+        Assert.Equal("extraLight", syntax.Styles[1].FontWeight!);
+        Assert.Equal("italic", syntax.Styles[1].FontStyle!);
     }
 }

@@ -5,7 +5,7 @@ using System.Runtime.Serialization;
 using System.Text;
 using System.Windows;
 using System.Windows.Media;
-
+using Stellar.WPF.Styling.IO;
 using Stellar.WPF.Utilities;
 
 namespace Stellar.WPF.Styling;
@@ -202,6 +202,66 @@ public class Style : ISerializable, IFreezable, ICloneable, IEquatable<Style>
     /// </summary>
     public Style()
     {
+    }
+
+    /// <summary>
+    /// Deserializes an instance from a DTO.
+    /// </summary>
+    protected Style(StyleDto style)
+    {
+        if (style is null)
+        {
+            throw new ArgumentNullException(nameof(style));
+        }
+
+        Name = style.Name!;
+
+        if (!string.IsNullOrWhiteSpace(style.FontFamily))
+        {
+            FontFamily = new FontFamily(style.FontFamily);
+        }
+
+        if (style.FontSize.HasValue)
+        {
+            FontSize = style.FontSize;
+        }
+
+        if (!string.IsNullOrWhiteSpace(style.FontWeight))
+        {
+            if (int.TryParse(style.FontWeight, out var result))
+            {
+                FontWeight = System.Windows.FontWeight.FromOpenTypeWeight(result);
+            }
+            else
+            {
+                FontWeight = (FontWeight)new FontWeightConverter().ConvertFromString(style.FontWeight)!;
+            }
+        }
+
+        if (!string.IsNullOrWhiteSpace(style.FontStyle))
+        {
+            FontStyle = (FontStyle)(new FontStyleConverter().ConvertFrom(style.FontStyle))!;
+        }
+
+        if (style.Underline.HasValue)
+        {
+            Underline = style.Underline;
+        }
+
+        if (style.Strikethrough.HasValue)
+        {
+            Strikethrough = style.Strikethrough;
+        }
+
+        if (!string.IsNullOrWhiteSpace(style.Foreground))
+        {
+            Foreground = new SimpleBrush(style.Foreground);
+        }
+
+        if (!string.IsNullOrWhiteSpace(style.Background))
+        {
+            Background = new SimpleBrush(style.Background);
+        }
     }
 
     /// <summary>

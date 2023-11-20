@@ -26,6 +26,11 @@ public sealed class SimpleBrush : Brush, ISerializable
 	/// </summary>
 	public SimpleBrush(Color color) : this(new SolidColorBrush(color)) { }
 
+    /// <summary>
+    /// Creates a new HighlightingBrush with the specified color.
+    /// </summary>
+    public SimpleBrush(string color) : this((Color)ColorConverter.ConvertFromString(color)) { }
+
     private SimpleBrush(SerializationInfo info, StreamingContext context)
     {
         brush = new SolidColorBrush((Color)ColorConverter.ConvertFromString(info.GetString("color")));

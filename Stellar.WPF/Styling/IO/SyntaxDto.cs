@@ -7,17 +7,17 @@ namespace Stellar.WPF.Styling.IO;
 /// <summary>
 /// A syntax definition, as read from a YAML file.
 /// </summary>
-public class Syntax
+public class SyntaxDto
 {
     public string? Name { get; set; }
 
     public IList<string> Extensions { get; private set; }
 
-    public IList<Style> Styles { get; private set; }
+    public IList<StyleDto> Styles { get; private set; }
 
-    public Syntax()
+    public SyntaxDto()
     {
-        Styles = new NullSafeCollection<Style>();
+        Styles = new NullSafeCollection<StyleDto>();
         Extensions = new NullSafeCollection<string>();
     }
 }
