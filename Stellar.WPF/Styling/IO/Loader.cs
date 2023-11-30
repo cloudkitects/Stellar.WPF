@@ -8,10 +8,6 @@ public static class Loader
 {
     public static SyntaxDto Load(string input)
     {
-        //var deserializer = new DeserializerBuilder()
-        //        .WithNamingConvention(CamelCaseNamingConvention.Instance)
-        //        .Build();
-
         var valueDeserializer = new DeserializerBuilder()
                     .WithNamingConvention(CamelCaseNamingConvention.Instance)
                     .BuildValueDeserializer();

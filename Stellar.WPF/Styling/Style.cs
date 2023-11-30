@@ -1,10 +1,10 @@
 ﻿using System;
 using System.Globalization;
-using System.Linq;
 using System.Runtime.Serialization;
 using System.Text;
 using System.Windows;
 using System.Windows.Media;
+
 using Stellar.WPF.Styling.IO;
 using Stellar.WPF.Utilities;
 
@@ -13,8 +13,7 @@ namespace Stellar.WPF.Styling;
 /// <summary>
 /// A named set of font properties and brushes.
 /// </summary>
-[Serializable]
-public class Style : ISerializable, IFreezable, ICloneable, IEquatable<Style>
+public class Style : IFreezable, ICloneable, IEquatable<Style>
 {
     #region fields and props
     internal static readonly Style Empty = new Style().Freeze<Style>();
@@ -205,7 +204,7 @@ public class Style : ISerializable, IFreezable, ICloneable, IEquatable<Style>
     }
 
     /// <summary>
-    /// Deserializes an instance from a DTO.
+    /// Create an instance from a DTO.
     /// </summary>
     protected Style(StyleDto style)
     {
@@ -263,112 +262,9 @@ public class Style : ISerializable, IFreezable, ICloneable, IEquatable<Style>
             Background = new SimpleBrush(style.Background);
         }
     }
-
-    /// <summary>
-    /// Deserializes an instance.
-    /// </summary>
-    protected Style(SerializationInfo info, StreamingContext context)
-    {
-        if (info is null)
-        {
-            throw new ArgumentNullException(nameof(info));
-        }
-
-        Name = info.GetString("Name")!;
-
-        if (info.GetBoolean("HasWeight"))
-        {
-            FontWeight = System.Windows.FontWeight.FromOpenTypeWeight(info.GetInt32("Weight"));
-        }
-
-        if (info.GetBoolean("HasStyle"))
-        {
-            FontStyle = (FontStyle?)new FontStyleConverter().ConvertFromInvariantString(info.GetString("Style")!);
-        }
-
-        if (info.GetBoolean("HasUnderline"))
-        {
-            Underline = info.GetBoolean("Underline");
-        }
-
-        if (info.GetBoolean("HasStrikethrough"))
-        {
-            Strikethrough = info.GetBoolean("Strikethrough");
-        }
-
-        Foreground = (Brush)info.GetValue("Foreground", typeof(SimpleBrush))!;
-        Background = (Brush)info.GetValue("Background", typeof(SimpleBrush))!;
-
-        if (info.GetBoolean("HasFamily"))
-        {
-            FontFamily = new FontFamily(info.GetString("Family"));
-        }
-
-        if (info.GetBoolean("HasSize"))
-        {
-            FontSize = info.GetInt32("Size");
-        }
-    }
     #endregion
 
     #region methods
-    /// <summary>
-    /// Serializes this instance.
-    /// </summary>
-    [System.Security.SecurityCritical]
-    public virtual void GetObjectData(SerializationInfo info, StreamingContext context)
-    {
-        if (info is null)
-        {
-            throw new ArgumentNullException(nameof(info));
-        }
-
-        info.AddValue("Name", Name);
-        info.AddValue("HasWeight", FontWeight.HasValue);
-
-        if (FontWeight.HasValue)
-        {
-            info.AddValue("Weight", FontWeight.Value.ToOpenTypeWeight());
-        }
-
-        info.AddValue("HasStyle", FontStyle.HasValue);
-        
-        if (FontStyle.HasValue)
-        {
-            info.AddValue("Style", FontStyle.Value.ToString());
-        }
-
-        info.AddValue("HasUnderline", Underline.HasValue);
-        
-        if (Underline.HasValue)
-        {
-            info.AddValue("Underline", Underline.Value);
-        }
-
-        info.AddValue("HasStrikethrough", Strikethrough.HasValue);
-        
-        if (Strikethrough.HasValue)
-        {
-            info.AddValue("Strikethrough", Strikethrough.Value);
-        }
-
-        info.AddValue("Foreground", Foreground);
-        info.AddValue("Background", Background);
-        info.AddValue("HasFamily", FontFamily is not null);
-        
-        if (FontFamily is not null)
-        {
-            info.AddValue("Family", FontFamily.FamilyNames.FirstOrDefault());
-        }
-
-        info.AddValue("HasSize", FontSize.HasValue);
-
-        if (FontSize.HasValue)
-        {
-            info.AddValue("Size", FontSize.Value.ToString());
-        }
-    }
-
     /// <summary>
     /// Gets CSS code for the color.
     /// </summary>

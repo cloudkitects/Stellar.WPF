@@ -45,7 +45,7 @@ namespace Stellar.WPF.Styling
             this.document = document ?? throw new ArgumentNullException(nameof(document));
             this.syntax = syntax ?? throw new ArgumentNullException(nameof(syntax));
 
-            engine = new StylingEngine(syntax.RuleSet);
+            engine = new StylingEngine(this.syntax.RuleSet);
             
             document.VerifyAccess();
             
