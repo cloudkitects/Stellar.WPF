@@ -16,9 +16,13 @@ public class SyntaxDto
 
     public IList<StyleDto> Styles { get; private set; }
 
+    public IDictionary<string, string> Properties { get; private set; }
+
+
     public SyntaxDto()
     {
         Styles = new NullSafeCollection<StyleDto>();
         Extensions = new NullSafeCollection<string>();
+        Properties = new Dictionary<string, string>();
     }
 }
