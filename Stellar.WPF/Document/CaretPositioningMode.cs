@@ -1,6 +1,4 @@
-﻿using System;
-
-namespace Stellar.WPF.Document
+﻿namespace Stellar.WPF.Document
 {
     /// <summary>
     /// Specifies the mode for getting the next caret position.

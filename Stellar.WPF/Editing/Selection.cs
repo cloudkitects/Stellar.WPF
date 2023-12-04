@@ -5,14 +5,13 @@ using System.Windows;
 
 using Stellar.WPF.Document;
 using Stellar.WPF.Styling;
-using Stellar.WPF.Utilities;
 
 namespace Stellar.WPF.Editing
 {
-	/// <summary>
-	/// Base class for selections.
-	/// </summary>
-	public abstract class Selection
+    /// <summary>
+    /// Base class for selections.
+    /// </summary>
+    public abstract class Selection
 	{
         internal readonly TextArea textArea;
         

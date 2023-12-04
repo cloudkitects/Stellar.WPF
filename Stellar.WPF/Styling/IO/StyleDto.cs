@@ -1,5 +1,4 @@
-﻿using System.Windows;
-using YamlDotNet.Serialization;
+﻿using YamlDotNet.Serialization;
 
 namespace Stellar.WPF.Styling.IO;
 

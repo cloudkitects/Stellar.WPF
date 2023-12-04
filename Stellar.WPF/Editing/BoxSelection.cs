@@ -5,11 +5,8 @@ using System.Linq;
 using System.Text;
 using System.Windows;
 using System.Windows.Input;
-using System.Windows.Media.TextFormatting;
 
 using Stellar.WPF.Document;
-using Stellar.WPF.Rendering;
-using Stellar.WPF.Utilities;
 
 namespace Stellar.WPF.Editing
 {

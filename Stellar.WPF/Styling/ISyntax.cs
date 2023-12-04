@@ -5,7 +5,6 @@ namespace Stellar.WPF.Styling;
 /// <summary>
 /// A syntax-highlighting (styling) definition.
 /// </summary>
-///[TypeConverter(typeof(HighlightingDefinitionTypeConverter))]
 public interface ISyntax
 {
     /// <summary>

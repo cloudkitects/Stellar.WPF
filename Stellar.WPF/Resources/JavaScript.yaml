@@ -23,52 +23,59 @@ styles:
   - &globals
     foreground: Blue
 
-ruleSets:
-  - keywords: "abstract boolean break byte case catch char class const continue
-      debugger default delete do double else enum export extends
-      final finally float for function goto if implements import in instanceof int interface
-      let long native new package private protected public return short static super switch synchronized
-      this throw throws transient try typeof var void volatile while with"
-    style: *keywords
-    ignoreCase: true
+rules:
+  - &commentMarkers
+    - keywords: "TODO FIXME"
+      style:
+        foreground: Red
+        fontWeight: bold
+  - main:
+    - keywords:
+        abstract boolean break byte case catch char class const continue
+        debugger default delete do double else enum export extends
+        final finally float for function goto if implements import in instanceof int interface
+        let long native new package private protected public return short static super switch synchronized
+        this throw throws transient try typeof var void volatile while with
+      style: *keywords
 
-  - keywords: "Array Boolean Date Function Global Math Number Object RegExp String"
-    style: *intrinsics
+    - keywords: Array Boolean Date Function Global Math Number Object RegExp String
+      style: *intrinsics
+      caseSensitive: true
 
-  - keywords: "false null true NaN Infinity"
-    style: *literals
+    - keywords: false null true NaN Infinity
+      style: *literals
 
-  - keywords: "eval parseInt parseFloat escape unescape isNaN isFinite"
-    style: *globals
+    - keywords: eval parseInt parseFloat escape unescape isNaN isFinite
+      style: *globals
 
-  - span: //
-    style: *comments
+    - span: //
+      style: *comments
+      rules: *commentMarkers
 
-  - span: /\*
-    end: \*/
-    style: *comments
-    multiline: true
+    - span: /\*
+      end: \*/
+      style: *comments
+      multiline: true
 
-  - span: (?<!([})\]\w]+\s*))/
-    end: /
-    style: *regexes
+    - span: (?<!([})\]\w]+\s*))/
+      end: /
+      style: *regexes
 
-  - span: \"
-    end: \"
-    style: *strings
-    multiline: true
-    ruleSet:
-      - span: \\
-        end: .
+    - span: \"
+      end: \"
+      style: *strings
+      multiline: true
+      rules:
+        - span: \\
+          end: .
 
-  - span: \'
-    end: \'
-    style: *characters
-    ruleSet:
-      - span: \\
-        end: .
+    - span: \'
+      end: \'
+      style: *characters
+      rules:
+        - span: \\
+          end: .
   
-  #TODO: this is universal, keep it in code
-  - digits: \b0[xX][0-9a-fA-F]+|(\b\d+(\.[0-9]+)?|\.[0-9]+)([eE][+-]?[0-9]+)?
-    style: *digits
-
+    #TODO: this could be universal or have a default
+    - rule: \b0[xX][0-9a-fA-F]+|(\b\d+(\.[0-9]+)?|\.[0-9]+)([eE][+-]?[0-9]+)?
+      style: *digits

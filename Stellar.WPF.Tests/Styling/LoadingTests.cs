@@ -1,5 +1,4 @@
 ﻿using Stellar.WPF.Styling.IO;
-using System.Windows.Documents;
 
 namespace Stellar.WPF.Tests.Styling;
 

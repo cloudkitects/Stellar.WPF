@@ -1,6 +1,6 @@
 ﻿using YamlDotNet.Serialization.NamingConventions;
 using YamlDotNet.Serialization;
-using YamlDotNet.Serialization.NodeDeserializers;
+using System;
 
 namespace Stellar.WPF.Styling.IO;
 
@@ -15,5 +15,15 @@ public static class Loader
         var deserializer = Deserializer.FromValueDeserializer(new AnchorNameDeserializer(valueDeserializer));
 
         return deserializer.Deserialize<SyntaxDto>(input);
+    }
+
+    public static SyntaxDto LoadFromResource(string name)
+    {
+
+        return name switch
+        {
+            "JavaScript" => Load(Resources.JavaScript),
+            _ => throw new ArgumentException("Resource not implemented", nameof(name))
+        };
     }
 }

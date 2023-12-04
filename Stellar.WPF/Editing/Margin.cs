@@ -1,8 +1,6 @@
 ﻿using System;
 using System.Diagnostics;
 using System.Windows;
-
-using Stellar.WPF.Document;
 using Stellar.WPF.Rendering;
 
 namespace Stellar.WPF.Editing

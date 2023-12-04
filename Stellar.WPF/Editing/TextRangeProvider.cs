@@ -3,13 +3,9 @@ using Stellar.WPF.Rendering;
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 using System.Windows.Automation.Provider;
 using System.Windows.Automation.Text;
 using System.Windows.Documents;
-using System.Windows;
 
 namespace Stellar.WPF.Editing;
 

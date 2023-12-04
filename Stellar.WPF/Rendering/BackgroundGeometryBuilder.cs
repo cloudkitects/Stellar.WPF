@@ -2,7 +2,6 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Windows.Controls.Primitives;
-using System.Windows.Media.TextFormatting;
 using System.Windows.Media;
 using System.Windows;
 
