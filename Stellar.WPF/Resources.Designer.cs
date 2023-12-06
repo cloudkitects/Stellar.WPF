@@ -61,7 +61,27 @@ namespace Stellar.WPF {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to .
+        ///   Looks up a localized string similar to # syntax definition for JavaScript 2.0 by Svante Lidman
+        ///# converted to AvalonEdit format by Siegfried Pammer in 2010
+        ///# converted to Stellar.Editor (yaml) by Hector J. Rivas in 2023
+        ///name: JavaScript
+        ///extensions: [js]
+        ///styles:
+        ///  - &amp;digits
+        ///    foreground: DarkBlue
+        ///  - &amp;comments
+        ///    foreground: Green
+        ///  - &amp;strings
+        ///    foreground: Sienna
+        ///  - &amp;characters
+        ///    foreground: Sienna
+        ///  - &amp;regexes
+        ///    foreground: Sienna
+        ///  - &amp;keywords
+        ///    foreground: Blue
+        ///  - &amp;intrinsics
+        ///    foreground: Blue
+        ///  - &amp;literals [rest of string was truncated]&quot;;.
         /// </summary>
         internal static string JavaScript {
             get {

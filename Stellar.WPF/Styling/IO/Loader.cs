@@ -26,4 +26,13 @@ public static class Loader
             _ => throw new ArgumentException("Resource not implemented", nameof(name))
         };
     }
+
+    public static string Save(SyntaxDto syntax)
+    {
+        var serializer = new SerializerBuilder()
+            .WithNamingConvention(CamelCaseNamingConvention.Instance)
+            .Build();
+
+        return serializer.Serialize(syntax);
+    }
 }

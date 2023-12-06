@@ -1,5 +1,7 @@
 ﻿using System.Collections.Generic;
 
+using YamlDotNet.Serialization;
+
 using Stellar.WPF.Utilities;
 
 namespace Stellar.WPF.Styling.IO;
@@ -8,13 +10,13 @@ namespace Stellar.WPF.Styling.IO;
 /// A syntax definition, as read from a YAML file.
 /// </summary>
 public class SyntaxDto
-{
-    
+{ 
     public string? Name { get; set; }
 
-    public IList<string> Extensions { get; private set; } = new NullSafeCollection<string>();
+    public IList<string> Extensions { get; set; } = new NullSafeCollection<string>();
 
-    public IList<StyleDto> Styles { get; private set; } = new NullSafeCollection<StyleDto>();
+    public IList<StyleDto> Styles { get; set; } = new NullSafeCollection<StyleDto>();
 
-    public IList<RuleSetDto> RuleSets { get; private set; } = new NullSafeCollection<RuleSetDto>();
+    [YamlMember(Alias = "rules")]
+    public IList<RuleSetDto> RuleSets { get; set; } = new NullSafeCollection<RuleSetDto>();
 }

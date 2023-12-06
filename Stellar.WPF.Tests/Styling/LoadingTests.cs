@@ -35,4 +35,45 @@ styles:
         // DTO to O
 
     }
+
+    [Fact]
+    public void LoadsFromResource()
+    {
+        var syntax = new SyntaxDto()
+        {
+            Name = "JavaScript",
+            Extensions = new[] { "js" },
+            Styles = new List<StyleDto>
+            {
+                new StyleDto { Name = "dummy", Foreground = "Blue" }
+            },
+            RuleSets = new List<RuleSetDto>
+            {
+                new RuleSetDto
+                {
+                    Name = "CommentMarkerSet",
+                    Elements = new List<ElementDto>
+                    {
+                        new ElementDto
+                        {
+                            Keywords = "TODO FIXME",
+                            Style = new StyleDto { Name = "dummy2", Background = "Yellow" }
+                        },
+                        new ElementDto
+                        {
+                            Span = "/*",
+                            End = "*/",
+                            Multiline = true
+                        }
+                    }
+                }
+            }
+        };
+
+        var yaml = Loader.Save(syntax);
+
+        //var syntax = Loader.LoadFromResource("JavaScript");
+
+        //Assert.NotNull(syntax);
+    }
 }
