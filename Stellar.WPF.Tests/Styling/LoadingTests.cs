@@ -39,6 +39,14 @@ styles:
     [Fact]
     public void LoadsFromResource()
     {
+        var syntax = Loader.LoadFromResource("JavaScript");
+
+        Assert.NotNull(syntax);
+    }
+
+    [Fact]
+    public void Write()
+    {
         var syntax = new SyntaxDto()
         {
             Name = "JavaScript",
@@ -58,12 +66,20 @@ styles:
                         {
                             Keywords = "TODO FIXME",
                             Style = new StyleDto { Name = "dummy2", Background = "Yellow" }
-                        },
+                        }
+                    }
+                },
+                new RuleSetDto
+                {
+                    Name = "main",
+                    Elements = new List<ElementDto>
+                    {
                         new ElementDto
                         {
                             Span = "/*",
                             End = "*/",
-                            Multiline = true
+                            Multiline = true,
+                            Style = new StyleDto { Foreground = "Red" }
                         }
                     }
                 }
@@ -72,8 +88,6 @@ styles:
 
         var yaml = Loader.Save(syntax);
 
-        //var syntax = Loader.LoadFromResource("JavaScript");
-
-        //Assert.NotNull(syntax);
+        Assert.NotNull(yaml);
     }
 }
