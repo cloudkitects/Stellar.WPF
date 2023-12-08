@@ -16,31 +16,34 @@ styles:
 
 ruleSets:
 - &commentMarkers
-  elements:
+  rules:
   - keywords: "TODO FIXME"
     style:
       foreground: Red
       fontWeight: bold
 
-- elements:
-  - keywords: abstract boolean break byte case catch char class const continue
-        debugger default delete do double else enum export extends
-        final finally float for function goto if implements import in instanceof int interface
-        let long native new package private protected public return short static super switch synchronized
-        this throw throws transient try typeof var void volatile while with
+- rules:
+  - keywords:
+     abstract boolean break byte case catch char class const continue
+     debugger default delete do double else enum export extends
+     final finally float for function goto if implements import in instanceof int interface
+     let long native new package private protected public return short static super switch synchronized
+     this throw throws transient try typeof var void volatile while with
     style: *keywords
 
   - keywords: Array Boolean Date Function Global Math Number Object RegExp String
-    style: *intrinsics
     caseSensitive: true
+    style: *intrinsics
 
   - span: //
+    ruleSet: *commentMarkers
     style: *comments
 
   - span: /\*
     end: \*/
-    style: *comments
     multiline: true
+    ruleSet: *commentMarkers
+    style: *comments
 
   - rule: \b0[xX][0-9a-fA-F]+|(\b\d+(\.[0-9]+)?|\.[0-9]+)([eE][+-]?[0-9]+)?
     style: *digits

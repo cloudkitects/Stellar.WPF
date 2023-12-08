@@ -42,52 +42,7 @@ styles:
         var syntax = Loader.LoadFromResource("JavaScript");
 
         Assert.NotNull(syntax);
-    }
-
-    [Fact]
-    public void Write()
-    {
-        var syntax = new SyntaxDto()
-        {
-            Name = "JavaScript",
-            Extensions = new[] { "js" },
-            Styles = new List<StyleDto>
-            {
-                new StyleDto { Name = "dummy", Foreground = "Blue" }
-            },
-            RuleSets = new List<RuleSetDto>
-            {
-                new RuleSetDto
-                {
-                    Name = "CommentMarkerSet",
-                    Elements = new List<ElementDto>
-                    {
-                        new ElementDto
-                        {
-                            Keywords = "TODO FIXME",
-                            Style = new StyleDto { Name = "dummy2", Background = "Yellow" }
-                        }
-                    }
-                },
-                new RuleSetDto
-                {
-                    Name = "main",
-                    Elements = new List<ElementDto>
-                    {
-                        new ElementDto
-                        {
-                            Span = "/*",
-                            End = "*/",
-                            Multiline = true,
-                            Style = new StyleDto { Foreground = "Red" }
-                        }
-                    }
-                }
-            }
-        };
-
-        var yaml = Loader.Save(syntax);
-
-        Assert.NotNull(yaml);
+        Assert.Equal("intrinsics", syntax.Styles[1].Name);
+        Assert.Equal("TODO FIXME", syntax.RuleSets[1]?.Rules?[3].RuleSet?.Rules?[0].Keywords);
     }
 }

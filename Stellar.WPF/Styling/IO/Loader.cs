@@ -14,6 +14,10 @@ public static class Loader
 
         var deserializer = Deserializer.FromValueDeserializer(new AnchorNameDeserializer(valueDeserializer));
 
+        //var deserializer = new DeserializerBuilder()
+        //            .WithNamingConvention(CamelCaseNamingConvention.Instance)
+        //            .Build();
+
         return deserializer.Deserialize<SyntaxDto>(input);
     }
 

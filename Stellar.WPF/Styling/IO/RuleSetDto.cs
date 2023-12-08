@@ -6,10 +6,10 @@ using Stellar.WPF.Utilities;
 
 namespace Stellar.WPF.Styling.IO;
 
-public class RuleSetDto
+public class RuleSetDto : IAnchoredObject
 {
     [YamlIgnore]
     public string? Name { get; set; }
 
-    public IList<ElementDto>? Elements { get; internal set; } = new NullSafeCollection<ElementDto>();
+    public IList<RuleDto>? Rules { get; internal set; } = new NullSafeCollection<RuleDto>();
 }
