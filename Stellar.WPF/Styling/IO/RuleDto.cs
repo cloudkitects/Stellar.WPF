@@ -1,4 +1,6 @@
-﻿using YamlDotNet.Serialization;
+﻿using System.Collections.Generic;
+
+using YamlDotNet.Serialization;
 
 namespace Stellar.WPF.Styling.IO;
 
@@ -23,7 +25,7 @@ public class RuleDto
     public bool? Multiline { get; set; }
 
     [YamlMember(DefaultValuesHandling = DefaultValuesHandling.OmitNull)]
-    public RuleSetDto? RuleSet { get; set; }
+    public IList<RuleSetDto>? RuleSets { get; set; }
 
     [YamlMember(DefaultValuesHandling = DefaultValuesHandling.OmitNull)]
     public StyleDto? Style { get; set; }

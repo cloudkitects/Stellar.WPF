@@ -205,7 +205,7 @@ public class Style : IFreezable, ICloneable, IEquatable<Style>
     /// <summary>
     /// Create an instance from a DTO.
     /// </summary>
-    protected Style(StyleDto style)
+    internal Style(StyleDto style)
     {
         if (style is null)
         {

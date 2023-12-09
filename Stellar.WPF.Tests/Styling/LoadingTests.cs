@@ -15,25 +15,26 @@ styles:
     foreground: Green
   - &allprops
     fontWeight: extraLight
-    fontStyle: italic
+    fontStyle: Italic
   - &custom
     fontWeight: 250
-    fontStyle: bold";
+    fontStyle: Oblique";
 
-        var syntax = Loader.Load(input);
+        var dto = Loader.Load(input);
 
-        Assert.NotNull(syntax);
+        Assert.NotNull(dto);
 
-        Assert.Equal("comment", syntax.Styles[0].Name);
-        Assert.Equal("C#", syntax.Name);
-        Assert.Equal("Green", syntax.Styles[0].Foreground!);
+        Assert.Equal("comment", dto.Styles[0].Name);
+        Assert.Equal("C#", dto.Name);
+        Assert.Equal("Green", dto.Styles[0].Foreground!);
         
-        Assert.Equal("allprops", syntax.Styles[1].Name);
-        Assert.Equal("extraLight", syntax.Styles[1].FontWeight!);
-        Assert.Equal("italic", syntax.Styles[1].FontStyle!);
+        Assert.Equal("allprops", dto.Styles[1].Name);
+        Assert.Equal("extraLight", dto.Styles[1].FontWeight!);
+        Assert.Equal("Italic", dto.Styles[1].FontStyle!);
 
-        // DTO to O
-
+        var syntax = new Syntax(dto);
+        
+        Assert.Equal(System.Windows.FontStyles.Italic, syntax.Styles[1].FontStyle);
     }
 
     [Fact]
@@ -43,6 +44,8 @@ styles:
 
         Assert.NotNull(syntax);
         Assert.Equal("intrinsics", syntax.Styles[1].Name);
-        Assert.Equal("TODO FIXME", syntax.RuleSets[1]?.Rules?[3].RuleSet?.Rules?[0].Keywords);
+        Assert.Equal("TODO FIXME", syntax.RuleSets[2]?.Rules?[3].RuleSets?[0].Rules?[0].Keywords);
+        Assert.Equal("XmlDoc.Comments", syntax.RuleSets[2]?.Rules?[2].RuleSets?[0].Import);
+
     }
 }
