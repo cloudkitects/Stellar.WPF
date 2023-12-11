@@ -1,5 +1,4 @@
-﻿using System;
-using System.Text.RegularExpressions;
+﻿using System.Text.RegularExpressions;
 
 namespace Stellar.WPF.Styling;
 
@@ -7,28 +6,12 @@ namespace Stellar.WPF.Styling;
 /// A text region defined by start and end expressions with styles,
 /// e.g., <see langword="&lt;p&gt;"/>Hello, world.<see langword="&lt;/p&gt;"/>.
 /// </summary>
-[Serializable]
-public class Span
+public class Span : Rule
 {
-    /// <summary>
-    /// Gets/Sets the rule set that applies inside this span.
-    /// </summary>
-    public RuleSet RuleSet { get; set; } = new();
-
-    /// <summary>
-    /// Gets/Sets the start expression.
-    /// </summary>
-    public Regex? StartRegex { get; set; }
-
     /// <summary>
     /// Gets the color used for the text matching the start expression.
     /// </summary>
     public Style StartStyle { get; set; } = new();
-
-    /// <summary>
-    /// Gets the color used for the text between start and end.
-    /// </summary>
-    public Style Style { get; set; } = new();
 
     /// <summary>
     /// Gets/Sets whether the span color includes the start.
@@ -52,9 +35,14 @@ public class Span
     /// </summary>
     public Style EndStyle { get; set; } = new();
 
+    /// <summary>
+    /// Gets/Sets the rule set that applies inside this span.
+    /// </summary>
+    public RuleSet RuleSet { get; set; } = new();
+
     /// <inheritdoc/>
     public override string ToString()
     {
-        return $"[{GetType().Name} Start=\"{StartRegex}\", End=\"{EndRegex}\"]";
+        return $"[{GetType().Name} Start=\"{Regex}\", End=\"{EndRegex}\"]";
     }
 }

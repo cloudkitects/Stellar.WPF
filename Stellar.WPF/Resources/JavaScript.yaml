@@ -35,7 +35,7 @@ ruleSets:
     style: *keywords
 
   - keywords: Array Boolean Date Function Global Math Number Object RegExp String
-    caseSensitive: true
+    ignoreCase: false
     style: *intrinsics
 
   - span: ///(?!/)

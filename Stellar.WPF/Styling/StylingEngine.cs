@@ -134,7 +134,7 @@ namespace Stellar.WPF.Styling
                 {
                     if (matches[i] is null || (matches[i].Success && matches[i].Index < currentIndex))
                     {
-                        matches[i] = currentRuleSet.Spans[i].StartRegex!.Match(lineText, currentIndex);
+                        matches[i] = currentRuleSet.Spans[i].Regex!.Match(lineText, currentIndex);
                     }
                 }
 
@@ -192,7 +192,7 @@ namespace Stellar.WPF.Styling
                         if (matches[index].Index == currentIndex)
                         {
                             throw new InvalidOperationException(
-                                $"{poppedSpan.StartRegex} or {poppedSpan.EndRegex} must match at least one character to prevent an endless loop.");
+                                $"{poppedSpan.Regex} or {poppedSpan.EndRegex} must match at least one character to prevent an endless loop.");
                         }
                     }
                     else

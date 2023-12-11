@@ -19,7 +19,7 @@ public class RuleDto
     public string? Rule { get; set; }
 
     [YamlMember(DefaultValuesHandling = DefaultValuesHandling.OmitNull)]
-    public bool? CaseSensitive { get; set; }
+    public bool? IgnoreCase { get; set; } = true;
 
     [YamlMember(DefaultValuesHandling = DefaultValuesHandling.OmitNull)]
     public bool? Multiline { get; set; }
