@@ -6,8 +6,18 @@ namespace Stellar.WPF.Styling;
 /// A text region defined by start and end expressions with styles,
 /// e.g., <see langword="&lt;p&gt;"/>Hello, world.<see langword="&lt;/p&gt;"/>.
 /// </summary>
-public class Span : Rule
+public class Span
 {
+    /// <summary>
+    /// The rule's regular expression.
+    /// </summary>
+    public Regex? Regex { get; set; }
+
+    /// <summary>
+    /// The rule's style.
+    /// </summary>
+    public Style? Style { get; set; }
+    
     /// <summary>
     /// Gets the color used for the text matching the start expression.
     /// </summary>

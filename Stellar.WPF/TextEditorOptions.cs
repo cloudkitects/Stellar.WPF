@@ -205,7 +205,7 @@ public class TextEditorOptions : INotifyPropertyChanged
     #endregion
 
     #region tab options
-    int indentationSize = 4;
+    int tabSize = 4;
     bool convertTabsToSpaces;
 
     /// <summary>
@@ -215,26 +215,26 @@ public class TextEditorOptions : INotifyPropertyChanged
     /// WPF to crash internally later--or sooner for larger fonts (~10K).
     /// </remarks>
     [DefaultValue(4)]
-    public virtual int IndentationSize
+    public virtual int TabSize
     {
-        get => indentationSize;
+        get => tabSize;
         set
         {
             if (value < 1)
             {
-                throw new ArgumentOutOfRangeException(nameof(value), $"{nameof(IndentationSize)} {value} < 1");
+                throw new ArgumentOutOfRangeException(nameof(value), $"{nameof(TabSize)} {value} < 1");
             }
             if (value > 255)
             {
-                throw new ArgumentOutOfRangeException(nameof(value), $"{nameof(IndentationSize)} {value} > 255");
+                throw new ArgumentOutOfRangeException(nameof(value), $"{nameof(TabSize)} {value} > 255");
             }
 
-            if (indentationSize != value)
+            if (tabSize != value)
             {
-                indentationSize = value;
+                tabSize = value;
                 
-                OnPropertyChanged(nameof(IndentationSize));
-                OnPropertyChanged(nameof(IndentationString));
+                OnPropertyChanged(nameof(TabSize));
+                OnPropertyChanged(nameof(TabString));
             }
         }
     }
@@ -254,7 +254,7 @@ public class TextEditorOptions : INotifyPropertyChanged
                 convertTabsToSpaces = value;
 
                 OnPropertyChanged(nameof(ConvertTabsToSpaces));
-                OnPropertyChanged(nameof(IndentationString));
+                OnPropertyChanged(nameof(TabString));
             }
         }
     }
@@ -263,23 +263,23 @@ public class TextEditorOptions : INotifyPropertyChanged
     /// Gets the text used for indentation.
     /// </summary>
     [Browsable(false)]
-    public string IndentationString => GetIndentationString(1);
+    public string TabString => GetTabString(1);
 
     /// <summary>
     /// Gets text required to indent from the specified <paramref name="column"/> to the next indentation level.
     /// </summary>
-    public virtual string GetIndentationString(int column)
+    public virtual string GetTabString(int column)
     {
         if (column < 1)
         {
             throw new ArgumentOutOfRangeException(nameof(column), $"{column} < 1");
         }
 
-        var indentationSize = IndentationSize;
+        var tabSize = TabSize;
 
         if (ConvertTabsToSpaces)
         {
-            return new string(' ', indentationSize - ((column - 1) % indentationSize));
+            return new string(' ', tabSize - ((column - 1) % tabSize));
         }
         
         return "\t";

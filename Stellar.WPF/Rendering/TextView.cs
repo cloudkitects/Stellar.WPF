@@ -1148,7 +1148,7 @@ public class TextView : FrameworkElement, IScrollInfo, IWeakEventListener, IText
     {
         defaultTextRunProperties = defaultTextRunProperties,
         textWrapping = canHorizontallyScroll ? TextWrapping.NoWrap : TextWrapping.Wrap,
-        tabSize = Options.IndentationSize * WideSpaceWidth,
+        tabSize = Options.TabSize * WideSpaceWidth,
         flowDirection = FlowDirection
     };
 

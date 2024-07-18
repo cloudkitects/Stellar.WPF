@@ -4,7 +4,6 @@ using System.Text;
 using System.Windows;
 using System.Windows.Media;
 
-using Stellar.WPF.Styling.IO;
 using Stellar.WPF.Utilities;
 
 namespace Stellar.WPF.Styling;
@@ -299,52 +298,35 @@ public class Style : IFreezable, ICloneable, IEquatable<Style>
     /// <inheritdoc/>
     public virtual bool Equals(Style? other)
     {
-        if (other is null)
-        {
-            return false;
-        }
-
-        return name == other.name && fontWeight == other.fontWeight
-            && fontStyle == other.fontStyle && underline == other.underline && strikethrough == other.strikethrough
-            && Equals(foreground, other.foreground) && Equals(background, other.background)
-            && Equals(fontFamily, other.fontFamily) && Equals(FontSize, other.FontSize);
+        return other is not null &&
+            name == other.name &&
+            fontWeight == other.fontWeight
+            && fontStyle == other.fontStyle &&
+            underline == other.underline &&
+            strikethrough == other.strikethrough
+            && Equals(foreground, other.foreground) &&
+            Equals(background, other.background) &&
+            Equals(fontFamily, other.fontFamily) &&
+            Equals(FontSize, other.FontSize);
     }
 
     /// <inheritdoc/>
     public override int GetHashCode()
     {
-        int hashCode = 0;
+        int hashCode;
 
         unchecked
         {
-            if (name is not null)
-            {
-                hashCode += 1000000007 * name.GetHashCode();
-            }
-
-            hashCode += 1000000009 * fontWeight.GetHashCode();
-            hashCode += 1000000021 * fontStyle.GetHashCode();
-            
-            if (foreground is not null)
-            {
-                hashCode += 1000000033 * foreground.GetHashCode();
-            }
-
-            if (background is not null)
-            {
-                hashCode += 1000000087 * background.GetHashCode();
-            }
-
-            if (fontFamily is not null)
-            {
-                hashCode += 1000000123 * fontFamily.GetHashCode();
-            }
-
-            if (fontSize is not null)
-            {
-                hashCode += 1000000167 * fontSize.GetHashCode();
-            }
+            hashCode = 
+                1000000007 * (name?.GetHashCode() ?? 0) +
+                1000000009 * fontWeight.GetHashCode() +
+                1000000021 * fontStyle.GetHashCode() +
+                1000000033 * (foreground?.GetHashCode() ?? 0) +
+                1000000087 * (background?.GetHashCode() ?? 0) +
+                1000000123 * (fontFamily?.GetHashCode() ?? 0) +
+                1000000167 * (fontSize?.GetHashCode() ?? 0);
         }
+
         return hashCode;
     }
 

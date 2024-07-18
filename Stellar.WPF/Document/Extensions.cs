@@ -306,7 +306,7 @@ public static class Extensions
     /// </summary>
     /// <param name="textSource">The text source.</param>
     /// <param name="offset">The offset where the indentation segment starts.</param>
-    /// <param name="indentationSize">The size of an indentation unit. See <see cref="TextEditorOptions.IndentationSize"/>.</param>
+    /// <param name="indentationSize">The size of an indentation unit. See <see cref="TextEditorOptions.TabSize"/>.</param>
     /// <returns>The indentation segment.
     /// If there is no indentation character at the specified <paramref name="offset"/>,
     /// an empty segment is returned.</returns>

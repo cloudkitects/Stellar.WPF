@@ -18,7 +18,7 @@ namespace Stellar.WPF.Styling
         #region fields and props
         private readonly RuleSet ruleSet;
 
-        // local variables from HighlightLineInternal (are member because they are accessed by HighlighLine helper methods)
+        // local variables from HighlightLineInternal (accessed by HighlighLine helper methods)
         private string lineText = string.Empty;
         private int lineOffset;
         private int currentIndex;
@@ -79,7 +79,7 @@ namespace Stellar.WPF.Styling
             {
                 styledLine = new StyledLine(document, line);
 
-                Style();
+                ApplyStyles();
 
                 return styledLine;
             }
@@ -105,7 +105,7 @@ namespace Stellar.WPF.Styling
             {
                 Debug.Assert(styledLine is null);
 
-                Style();
+                ApplyStyles();
             }
             finally
             {
@@ -116,7 +116,7 @@ namespace Stellar.WPF.Styling
         /// <summary>
         /// The engine's main purpose: apply styles based on the current rule set and span matches.
         /// </summary>
-        private void Style()
+        private void ApplyStyles()
         {
             currentIndex = 0;
 
@@ -153,7 +153,7 @@ namespace Stellar.WPF.Styling
                 }
 
                 // style in between
-                StyleUntil(firstMatch.Index);
+                ApplyStylesUntil(firstMatch.Index);
 
                 Debug.Assert(currentIndex == firstMatch.Index);
 
@@ -237,7 +237,7 @@ namespace Stellar.WPF.Styling
                 endMatch = null!;
             }
 
-            StyleUntil(lineText.Length);
+            ApplyStylesUntil(lineText.Length);
 
             PopAllSections();
         }
@@ -245,7 +245,7 @@ namespace Stellar.WPF.Styling
         /// <summary>
         /// Continue styling past an identified and styled span. 
         /// </summary>
-        private void StyleUntil(int stop)
+        private void ApplyStylesUntil(int stop)
         {
             Debug.Assert(currentIndex <= stop);
 

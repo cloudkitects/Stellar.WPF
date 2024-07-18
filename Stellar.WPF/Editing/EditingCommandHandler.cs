@@ -241,7 +241,7 @@ namespace Stellar.WPF.Editing
                             int offset = current.Offset;
                             if (textArea.EditableSectionProvider.CanInsert(offset))
                             {
-                                textArea.Document.Replace(offset, 0, textArea.Options.IndentationString, ChangeOffsetType.KeepAnchorsInFront);
+                                textArea.Document.Replace(offset, 0, textArea.Options.TabString, ChangeOffsetType.KeepAnchorsInFront);
                             }
 
                             if (current == end)
@@ -254,7 +254,7 @@ namespace Stellar.WPF.Editing
                     }
                     else
                     {
-                        string indentationString = textArea.Options.GetIndentationString(textArea.Caret.Column);
+                        string indentationString = textArea.Options.GetTabString(textArea.Caret.Column);
                         textArea.ReplaceSelectionWithText(indentationString);
                     }
                 }
@@ -267,7 +267,7 @@ namespace Stellar.WPF.Editing
                 delegate (TextArea textArea, Line line)
                 {
                     int offset = line.Offset;
-                    ISegment s = textArea.Document.GetSingleIndentationSegment(offset, textArea.Options.IndentationSize);
+                    ISegment s = textArea.Document.GetSingleIndentationSegment(offset, textArea.Options.TabSize);
                     if (s.Length > 0)
                     {
                         s = textArea.GetDeletableSegments(s).FirstOrDefault()!;
@@ -628,7 +628,7 @@ namespace Stellar.WPF.Editing
                 text = text.NormalizeNewLines(newLine)!;
                 
                 text = textArea.Options.ConvertTabsToSpaces
-                    ? text.Replace("\t", new string(' ', textArea.Options.IndentationSize))
+                    ? text.Replace("\t", new string(' ', textArea.Options.TabSize))
                     : text;
                 
                 return text;
@@ -719,7 +719,7 @@ namespace Stellar.WPF.Editing
             var document = textArea.Document;
             var endOffset = segment.EndOffset;
             
-            var indentationString = new string(' ', textArea.Options.IndentationSize);
+            var indentationString = new string(' ', textArea.Options.TabSize);
             
             for (var offset = segment.Offset; offset < endOffset; offset++)
             {
@@ -746,7 +746,7 @@ namespace Stellar.WPF.Editing
             var document = textArea.Document;
 
             var endOffset = segment.EndOffset;
-            var indentationSize = textArea.Options.IndentationSize;
+            var indentationSize = textArea.Options.TabSize;
             var spacesCount = 0;
             
             for (var offset = segment.Offset; offset < endOffset; offset++)

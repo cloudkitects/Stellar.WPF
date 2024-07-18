@@ -7,7 +7,6 @@ using System.Windows.Media;
 using YamlDotNet.Serialization.NamingConventions;
 using YamlDotNet.Serialization;
 using System.Linq;
-using System.Diagnostics.CodeAnalysis;
 
 namespace Stellar.WPF.Styling.IO;
 

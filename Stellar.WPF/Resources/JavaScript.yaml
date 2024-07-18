@@ -13,6 +13,8 @@ styles:
   foreground: Green
 - &digits
   foreground: DarkBlue
+- &attribs
+  foreground: Magenta
 
 ruleSets:
 - &commentMarkers
@@ -35,7 +37,6 @@ ruleSets:
     style: *keywords
 
   - keywords: Array Boolean Date Function Global Math Number Object RegExp String
-    ignoreCase: false
     style: *intrinsics
 
   - span: ///(?!/)
@@ -49,12 +50,16 @@ ruleSets:
     ruleSets:
     - *commentMarkers
 
-  - span: /\*
-    end: \*/
+  - span: '/*'
+    stop: '*/'
     multiline: true
     style: *comments
     ruleSets:
     - *commentMarkers
+
+  - span: '['
+    stop: ']'
+    style: *attribs
 
   - rule: \b0[xX][0-9a-fA-F]+|(\b\d+(\.[0-9]+)?|\.[0-9]+)([eE][+-]?[0-9]+)?
     style: *digits

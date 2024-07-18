@@ -19,7 +19,7 @@ namespace Stellar.WPF.Styling
 
         private readonly TextWriter htmlWriter;
         private readonly HtmlOptions options;
-        private Stack<string> endTagStack = new();
+        private readonly Stack<string> endTagStack = new();
         private bool spaceNeedsEscaping = true;
         private bool hasSpace;
         private bool needIndentation = true;

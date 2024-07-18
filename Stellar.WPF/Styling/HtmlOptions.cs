@@ -27,7 +27,7 @@ public class HtmlOptions
     /// </summary>
     public HtmlOptions(TextEditorOptions options) : this()
     {
-        TabSize = (options ?? throw new ArgumentNullException(nameof(options))).IndentationSize;
+        TabSize = (options ?? throw new ArgumentNullException(nameof(options))).TabSize;
     }
 
 

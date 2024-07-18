@@ -13,13 +13,13 @@ public class RuleDto
     public string? Span { get; set; }
 
     [YamlMember(DefaultValuesHandling = DefaultValuesHandling.OmitNull)]
-    public string? End { get; set; }
+    public string? Stop { get; set; }
 
     [YamlMember(DefaultValuesHandling = DefaultValuesHandling.OmitNull)]
     public string? Rule { get; set; }
 
     [YamlMember(DefaultValuesHandling = DefaultValuesHandling.OmitNull)]
-    public bool? IgnoreCase { get; set; } = true;
+    public bool? IgnoreCase { get; set; }
 
     [YamlMember(DefaultValuesHandling = DefaultValuesHandling.OmitNull)]
     public bool? Multiline { get; set; }

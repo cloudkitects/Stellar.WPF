@@ -100,17 +100,10 @@ public static class HtmlClipboard
         
         while (line != null && line.Offset < segmentEndOffset)
         {
-            StyledLine styledLine;
+            var styledLine = highlighter is null
+                ? new StyledLine(document, line)
+                : highlighter.StyleLine(line.Number);
             
-            if (highlighter != null)
-            {
-                styledLine = highlighter.StyleLine(line.Number);
-            }
-            else
-            {
-                styledLine = new StyledLine(document, line);
-            }
-
             var overlap = SimpleSegment.GetOverlap(segment, line);
             
             if (html.Length > 0)
@@ -122,6 +115,7 @@ public static class HtmlClipboard
             
             line = line.NextLine;
         }
+        
         return html.ToString();
     }
 }

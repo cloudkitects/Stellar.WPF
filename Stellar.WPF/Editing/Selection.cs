@@ -105,11 +105,11 @@ namespace Stellar.WPF.Editing
 
 					if (!textArea.Options.ConvertTabsToSpaces && lineText.Trim('\t').Length == 0)
 					{
-						var tabCount = colDiff / textArea.Options.IndentationSize;
+						var tabCount = colDiff / textArea.Options.TabSize;
 						
 						additionalSpaces = new string('\t', tabCount);
 						
-						colDiff -= tabCount * textArea.Options.IndentationSize;
+						colDiff -= tabCount * textArea.Options.TabSize;
 					}
 
 					additionalSpaces += new string(' ', colDiff);
