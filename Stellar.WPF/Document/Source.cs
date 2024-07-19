@@ -9,7 +9,7 @@ namespace Stellar.WPF.Document;
 /// Implements ITextSource using a char tree.
 /// </summary>
 [Serializable]
-public sealed class TextSource : ITextSource
+public sealed class Source : ISource
 {
 	readonly Tree<char> tree;
 	readonly ICheckpoint? checkpoint;
@@ -17,7 +17,7 @@ public sealed class TextSource : ITextSource
 	/// <summary>
 	/// Create a new TextSource from a tree.
 	/// </summary>
-	public TextSource(Tree<char> tree)
+	public Source(Tree<char> tree)
 	{
 		this.tree = (tree ?? throw new ArgumentNullException(nameof(tree))).Clone();
 	}
@@ -25,7 +25,7 @@ public sealed class TextSource : ITextSource
 	/// <summary>
 	/// Creates a new TextSource from a tree with a given checkpoint.
 	/// </summary>
-	public TextSource(Tree<char> tree, ICheckpoint checkpoint)
+	public Source(Tree<char> tree, ICheckpoint checkpoint)
 		: this(tree)
 	{
 		this.checkpoint = checkpoint;
@@ -79,15 +79,15 @@ public sealed class TextSource : ITextSource
 	}
 
 	/// <inheritdoc/>
-	public ITextSource CreateSnapshot()
+	public ISource CreateSnapshot()
 	{
 		return this;
 	}
 
 	/// <inheritdoc/>
-	public ITextSource CreateSnapshot(int offset, int length)
+	public ISource CreateSnapshot(int offset, int length)
 	{
-		return new TextSource(tree.Slice(offset, length));
+		return new Source(tree.Slice(offset, length));
 	}
 
 	/// <inheritdoc/>

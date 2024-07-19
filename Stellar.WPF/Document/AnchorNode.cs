@@ -9,7 +9,7 @@ namespace Stellar.WPF.Document;
 /// </summary>
 internal sealed class AnchorNode : WeakReference
 {
-    internal AnchorNode left, right, parent;
+    internal AnchorNode? left, right, parent;
     internal bool color;
     internal int length;
     internal int totalLength; // length + left.totalLength + right.totalLength

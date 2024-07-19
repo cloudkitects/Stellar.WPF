@@ -36,7 +36,7 @@ internal static class NewLineFinder
     /// <summary>
     /// Get the location of the next new line character in a text source, or SimpleSegment.Invalid if none is found.
     /// </summary>
-    internal static SimpleSegment Next(ITextSource text, int offset)
+    internal static SimpleSegment Next(ISource text, int offset)
     {
         var textLength = text.TextLength;
         var pos = text.IndexOfAny(newline, offset, textLength - offset);

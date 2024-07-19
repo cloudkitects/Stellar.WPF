@@ -84,7 +84,7 @@ public static class Extensions
     /// In real caret movement, there are additional caret stops at line starts and ends. This method
     /// treats linefeeds as simple whitespace.
     /// </remarks>
-    public static int GetNextCaretPosition(this ITextSource textSource, int offset, LogicalDirection direction, CaretPositioningMode mode)
+    public static int GetNextCaretPosition(this ISource textSource, int offset, LogicalDirection direction, CaretPositioningMode mode)
     {
         switch (mode)
         {
@@ -310,7 +310,7 @@ public static class Extensions
     /// <returns>The indentation segment.
     /// If there is no indentation character at the specified <paramref name="offset"/>,
     /// an empty segment is returned.</returns>
-    public static ISegment GetSingleIndentationSegment(this ITextSource textSource, int offset, int indentationSize)
+    public static ISegment GetSingleIndentationSegment(this ISource textSource, int offset, int indentationSize)
     {
         if (textSource is null)
         {
@@ -356,7 +356,7 @@ public static class Extensions
     /// <param name="textSource">The text source.</param>
     /// <param name="offset">The offset where the whitespace starts.</param>
     /// <returns>The segment containing the whitespace.</returns>
-    public static ISegment GetWhitespaceAfter(this ITextSource textSource, int offset)
+    public static ISegment GetWhitespaceAfter(this ISource textSource, int offset)
     {
         if (textSource is null)
         {
@@ -384,7 +384,7 @@ public static class Extensions
     /// <param name="textSource">The text source.</param>
     /// <param name="offset">The offset where the whitespace ends.</param>
     /// <returns>The segment containing the whitespace.</returns>
-    public static ISegment GetWhitespaceBefore(this ITextSource textSource, int offset)
+    public static ISegment GetWhitespaceBefore(this ISource textSource, int offset)
     {
         if (textSource is null)
         {

@@ -7,7 +7,7 @@ namespace Stellar.WPF.Document;
 /// This class is thread-safe.
 /// </summary>
 [Serializable]
-public class DocumentChangeEventArgs : TextChangeEventArgs
+public class DocumentChangeEventArgs : ChangeEventArgs
 {
     private volatile ChangeOffsetCollection offsetChanges;
 
@@ -72,7 +72,7 @@ public class DocumentChangeEventArgs : TextChangeEventArgs
     /// <summary>
     /// Creates a new DocumentChangeEventArgs object.
     /// </summary>
-    public DocumentChangeEventArgs(int offset, ITextSource removedText, ITextSource insertedText, ChangeOffsetCollection changes)
+    public DocumentChangeEventArgs(int offset, ISource removedText, ISource insertedText, ChangeOffsetCollection changes)
         : base(offset, removedText, insertedText)
     {
         SetOffsetChanges(changes);
@@ -97,7 +97,7 @@ public class DocumentChangeEventArgs : TextChangeEventArgs
     }
 
     /// <inheritdoc/>
-    public override TextChangeEventArgs Invert()
+    public override ChangeEventArgs Invert()
     {
         var changes = OffsetChangesOrNull;
 

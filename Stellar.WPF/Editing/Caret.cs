@@ -41,7 +41,7 @@ namespace Stellar.WPF.Editing
             }
         }
 
-        private void TextView_VisualLinesChanged(object sender, EventArgs e)
+        private void TextView_VisualLinesChanged(object? sender, EventArgs e)
         {
             if (visible)
             {
@@ -53,7 +53,7 @@ namespace Stellar.WPF.Editing
             InvalidateVisualColumn();
         }
 
-        private void TextView_ScrollOffsetChanged(object sender, EventArgs e)
+        private void TextView_ScrollOffsetChanged(object? sender, EventArgs e)
         {
             caretAdorner?.InvalidateVisual();
         }

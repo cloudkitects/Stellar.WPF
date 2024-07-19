@@ -58,7 +58,7 @@ internal sealed class LineTree : IList<Line>
             line.lineCount = totalCount;
             line.totalLength = totalLength;
 
-            if (line.parent is not null)
+            if (line?.parent is not null)
             {
                 UpdateNodeData(line.parent);
             }
@@ -142,7 +142,7 @@ internal sealed class LineTree : IList<Line>
     #endregion
 
     #region properties to/from line
-    public Line LineAt(int index)
+    public Line? LineAt(int index)
     {
         Debug.Assert(index >= 0);
         Debug.Assert(index < root.lineCount);
@@ -151,13 +151,13 @@ internal sealed class LineTree : IList<Line>
 
         while (true)
         {
-            if (line.left is not null && index < line.left.lineCount)
+            if (line?.left is not null && index < line?.left.lineCount)
             {
-                line = line.left;
+                line = line?.left;
             }
             else
             {
-                if (line.left is not null)
+                if (line?.left is not null)
                 {
                     index -= line.left.lineCount;
                 }
@@ -169,7 +169,7 @@ internal sealed class LineTree : IList<Line>
 
                 index--;
 
-                line = line.right;
+                line = line?.right;
             }
         }
     }
@@ -212,13 +212,13 @@ internal sealed class LineTree : IList<Line>
 
         while (true)
         {
-            if (line.left is not null && offset < line.left.totalLength)
+            if (line?.left is not null && offset < line?.left.totalLength)
             {
-                line = line.left;
+                line = line?.left;
             }
             else
             {
-                if (line.left is not null)
+                if (line?.left is not null)
                 {
                     offset -= line.left.totalLength;
                 }
@@ -230,18 +230,18 @@ internal sealed class LineTree : IList<Line>
                     return line;
                 }
 
-                line = line.right;
+                line = line?.right;
             }
         }
     }
 
     internal static int OffsetOf(Line line)
     {
-        int offset = line.left is not null
+        int offset = line?.left is not null
             ? line.left.totalLength
             : 0;
 
-        while (line.parent is not null)
+        while (line?.parent is not null)
         {
             if (line == line.parent.right)
             {
@@ -897,7 +897,7 @@ internal sealed class LineTree : IList<Line>
         {
             yield return line;
 
-            line = line.NextLine;
+            line = line?.NextLine;
         }
     }
 

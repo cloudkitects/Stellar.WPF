@@ -4,9 +4,9 @@ using System.IO;
 namespace Stellar.WPF.Document;
 
 /// <summary>
-/// A read-only view on a (potentially mutable) text source.
+/// A read-only view on a (potentially mutable) source of text.
 /// </summary>
-public interface ITextSource
+public interface ISource
 {
     /// <summary>
     /// A checkpoint for this text source, null for unversioned text sources.
@@ -16,12 +16,12 @@ public interface ITextSource
     /// <summary>
     /// Create an immutable snapshot of this text source, the only thread-safe method in this interface.
     /// </summary>
-    ITextSource CreateSnapshot();
+    ISource CreateSnapshot();
 
     /// <summary>
     /// Create an immutable snapshot of a section of this text source (thread-safe).
     /// </summary>
-    ITextSource CreateSnapshot(int offset, int length);
+    ISource CreateSnapshot(int offset, int length);
 
     /// <summary>
     /// Creates a new TextReader from this text source.

@@ -1242,7 +1242,7 @@ internal sealed class CollapsedSectionsTree : ILineTracker, IDisposable
 
     private static bool GetColor(CollapsedSectionsNode node)
     {
-        return node != null ? node.color : BLACK;
+        return node != null && node.color;
     }
     #endregion
 

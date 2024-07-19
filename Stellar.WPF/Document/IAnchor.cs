@@ -54,7 +54,7 @@ public interface IAnchor
     /// </para>
     /// </summary>
     /// <remarks><inheritdoc cref="IsDeleted" /></remarks>
-    bool SurviveDeletion { get; set; }
+    bool SurvivesDeletion { get; set; }
 
     /// <summary>
     /// Whether the anchor was deleted.
@@ -66,7 +66,7 @@ public interface IAnchor
     /// You cannot retrieve the offset from an anchor that has been deleted.</para>
     /// <para>This deletion behavior might be useful when using anchors for building a bookmark feature,
     /// but in other cases you want to still be able to use the anchor. For those cases, set
-    /// <c><see cref="SurviveDeletion"/> = true</c>.</para>
+    /// <c><see cref="SurvivesDeletion"/> = true</c>.</para>
     /// </remarks>
     bool IsDeleted { get; }
 

@@ -36,7 +36,7 @@ public interface ICheckpoint
     /// </summary>
     /// <remarks>Thread-safe.</remarks>
     /// <exception cref="ArgumentException">Raised if other belongs to a different document than this checkpoint.</exception>
-    IEnumerable<TextChangeEventArgs> GetChangesUpTo(ICheckpoint other);
+    IEnumerable<ChangeEventArgs> GetChangesUpTo(ICheckpoint other);
 
     /// <summary>
     /// Calculates where the offset has moved in the other checkpoint.

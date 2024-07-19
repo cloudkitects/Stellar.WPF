@@ -83,7 +83,7 @@ public sealed class StyledTextModel
 	/// Updates the start and end offsets of all segments stored in this collection.
 	/// </summary>
 	/// <param name="e">TextChangeEventArgs instance describing the change to the document.</param>
-	public void UpdateOffsets(TextChangeEventArgs e)
+	public void UpdateOffsets(ChangeEventArgs e)
 	{
         UpdateOffsets((e ?? throw new ArgumentNullException(nameof(e))).ComputeOffset);
 	}
@@ -298,7 +298,7 @@ public sealed class StyledTextModel
 	/// Creates WPF Run instances that can be used for TextBlock.Inlines.
 	/// </summary>
 	/// <param name="textSource">The text source that holds the text for this model.</param>
-	public Run[] CreateRuns(ITextSource textSource)
+	public Run[] CreateRuns(ISource textSource)
 	{
 		var runs = new Run[styles.Count];
 

@@ -11,7 +11,7 @@ namespace Stellar.WPF.Document;
 /// an exception) are likely to cause corruption of data structures that listen to the
 /// Changing and Changed events.
 /// </remarks>
-public interface IDocument : ITextSource, IServiceProvider
+public interface IDocument : ISource, IServiceProvider
 {
     /// <summary>
     /// Gets/Sets the text of the whole document.
@@ -22,12 +22,12 @@ public interface IDocument : ITextSource, IServiceProvider
     /// <summary>
     /// Event called directly before a change is applied to the document.
     /// </summary>
-    event EventHandler<TextChangeEventArgs> TextChanging;
+    event EventHandler<ChangeEventArgs> TextChanging;
 
     /// <summary>
     /// Event called directly after a change is applied to the document.
     /// </summary>
-    event EventHandler<TextChangeEventArgs> TextChanged;
+    event EventHandler<ChangeEventArgs> TextChanged;
 
     /// <summary>
     /// Event called after a group of changes is completed.
@@ -91,7 +91,7 @@ public interface IDocument : ITextSource, IServiceProvider
     /// For AnchorMovementType.Default, they will move behind the inserted text.
     /// The caret will also move behind the inserted text.
     /// </remarks>
-    void Insert(int offset, ITextSource text);
+    void Insert(int offset, ISource text);
 
     /// <summary>
     /// Inserts text.
@@ -115,7 +115,7 @@ public interface IDocument : ITextSource, IServiceProvider
     /// For AnchorMovementType.Default, they will move according to the specified movement type.
     /// The caret will also move accordingly.
     /// </param>
-    void Insert(int offset, ITextSource text, AnchorMovementType defaultAnchorMovementType);
+    void Insert(int offset, ISource text, AnchorMovementType defaultAnchorMovementType);
 
     /// <summary>
     /// Removes text.
@@ -138,7 +138,7 @@ public interface IDocument : ITextSource, IServiceProvider
     /// <param name="offset">Starting offset of the text to be replaced.</param>
     /// <param name="length">The length of the text to be replaced.</param>
     /// <param name="newText">The new text.</param>
-    void Replace(int offset, int length, ITextSource newText);
+    void Replace(int offset, int length, ISource newText);
 
     /// <summary>
     /// Combine the following actions into a single one for undo purposes.
@@ -160,7 +160,7 @@ public interface IDocument : ITextSource, IServiceProvider
     /// Creates a new <see cref="IAnchor"/> at the specified offset.
     /// </summary>
     /// <inheritdoc cref="IAnchor" select="remarks|example"/>
-    IAnchor CreateAnchor(int offset);
+    IAnchor CreateAnchor(int offset, bool survivesDeletion = false);
 
     /// <summary>
     /// Gets the name of the file the document is stored in.

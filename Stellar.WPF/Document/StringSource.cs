@@ -7,12 +7,12 @@ namespace Stellar.WPF.Document;
 /// Implements the ITextSource interface using a string.
 /// </summary>
 [Serializable]
-public class StringTextSource : ITextSource
+public class StringSource : ISource
 {
     /// <summary>
     /// Gets a text source containing the empty string.
     /// </summary>
-    public static readonly StringTextSource Empty = new(string.Empty);
+    public static readonly StringSource Empty = new(string.Empty);
 
     private readonly string text;
     private readonly ICheckpoint? checkpoint;
@@ -20,7 +20,7 @@ public class StringTextSource : ITextSource
     /// <summary>
     /// Creates a new StringTextSource with the given text.
     /// </summary>
-    public StringTextSource(string text)
+    public StringSource(string text)
     {
         this.text = text ?? throw new ArgumentNullException(nameof(text));
     }
@@ -28,7 +28,7 @@ public class StringTextSource : ITextSource
     /// <summary>
     /// Creates a new StringTextSource with the given text.
     /// </summary>
-    public StringTextSource(string text, ICheckpoint checkpoint)
+    public StringSource(string text, ICheckpoint checkpoint)
     {
         this.text = text ?? throw new ArgumentNullException(nameof(text));
         this.checkpoint = checkpoint;
@@ -44,10 +44,10 @@ public class StringTextSource : ITextSource
     public string Text => text;
 
     /// <inheritdoc/>
-    public ITextSource CreateSnapshot() => this; // StringTextSource is immutable
+    public ISource CreateSnapshot() => this; // StringTextSource is immutable
 
     /// <inheritdoc/>
-    public ITextSource CreateSnapshot(int offset, int length) => new StringTextSource(text.Substring(offset, length));
+    public ISource CreateSnapshot(int offset, int length) => new StringSource(text.Substring(offset, length));
 
     /// <inheritdoc/>
     public TextReader CreateReader() => new StringReader(text);

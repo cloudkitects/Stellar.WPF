@@ -77,8 +77,7 @@ public sealed class Document : IDocument, INotifyPropertyChanged
     /// <summary>
     /// Gets/Sets the text of the whole document.
     /// </summary>
-    public string Text
-    {
+    public string Text {
         get
         {
             VerifyAccess();
@@ -106,8 +105,7 @@ public sealed class Document : IDocument, INotifyPropertyChanged
     }
 
     /// <inheritdoc/>
-    public int TextLength
-    {
+    public int TextLength {
         get
         {
             VerifyAccess();
@@ -139,7 +137,7 @@ public sealed class Document : IDocument, INotifyPropertyChanged
         charTree = new Tree<char>(text);
         lineTree = new LineTree(this);
         lineManager = new LineManager(lineTree, this);
-        
+
         lineTrackers.CollectionChanged += delegate { lineManager.UpdateLineTrackers(); };
 
         anchorTree = new AnchorTree(this);
@@ -151,20 +149,20 @@ public sealed class Document : IDocument, INotifyPropertyChanged
     /// <summary>
     /// Create a new text document with the specified initial text.
     /// </summary>
-    public Document(ITextSource text)
+    public Document(ISource text)
         : this(GetTextFromTextSource(text))
     {
     }
 
     // gets the text from a text source, directly retrieving the underlying tree where possible
-    private static IEnumerable<char> GetTextFromTextSource(ITextSource textSource)
+    private static IEnumerable<char> GetTextFromTextSource(ISource textSource)
     {
         if (textSource == null)
         {
             throw new ArgumentNullException(nameof(textSource));
         }
 
-        if (textSource is TextSource source)
+        if (textSource is Source source)
         {
             return source.GetTree();
         }
@@ -201,7 +199,7 @@ public sealed class Document : IDocument, INotifyPropertyChanged
     public int IndexOf(char c, int startIndex, int count)
     {
         DebugVerifyAccess();
-        
+
         return charTree.IndexOf(c, startIndex, count);
     }
 
@@ -209,7 +207,7 @@ public sealed class Document : IDocument, INotifyPropertyChanged
     public int LastIndexOf(char c, int startIndex, int count)
     {
         DebugVerifyAccess();
-        
+
         return charTree.LastIndexOf(c, startIndex, count);
     }
 
@@ -217,7 +215,7 @@ public sealed class Document : IDocument, INotifyPropertyChanged
     public int IndexOfAny(char[] anyOf, int startIndex, int count)
     {
         DebugVerifyAccess();
-        
+
         return charTree.IndexOfAny(anyOf, startIndex, count);
     }
 
@@ -225,7 +223,7 @@ public sealed class Document : IDocument, INotifyPropertyChanged
     public int IndexOf(string searchText, int startIndex, int count, StringComparison comparisonType)
     {
         DebugVerifyAccess();
-        
+
         return charTree.IndexOf(searchText, startIndex, count, comparisonType);
     }
 
@@ -233,7 +231,7 @@ public sealed class Document : IDocument, INotifyPropertyChanged
     public int LastIndexOf(string searchText, int startIndex, int count, StringComparison comparisonType)
     {
         DebugVerifyAccess();
-        
+
         return charTree.LastIndexOf(searchText, startIndex, count, comparisonType);
     }
 
@@ -241,7 +239,7 @@ public sealed class Document : IDocument, INotifyPropertyChanged
     public char GetCharAt(int offset)
     {
         DebugVerifyAccess();
-        
+
         return charTree[offset];
     }
 
@@ -288,10 +286,9 @@ public sealed class Document : IDocument, INotifyPropertyChanged
     /// <summary>
     /// A separate event is required given EventHandler<T> is invariant.
     /// </summary>
-    private event EventHandler<TextChangeEventArgs> textChanging;
+    private event EventHandler<ChangeEventArgs> textChanging;
 
-    event EventHandler<TextChangeEventArgs> IDocument.TextChanging
-    {
+    event EventHandler<ChangeEventArgs> IDocument.TextChanging {
         add { textChanging += value; }
         remove { textChanging -= value; }
     }
@@ -299,9 +296,8 @@ public sealed class Document : IDocument, INotifyPropertyChanged
     /// <summary>
     /// Event raised for completing a group of changes.
     /// </summary>
-    event EventHandler IDocument.ChangeCompleted
-    {
-        add    { TextChanged += value; }
+    event EventHandler IDocument.ChangeCompleted {
+        add { TextChanged += value; }
         remove { TextChanged -= value; }
     }
 
@@ -317,15 +313,14 @@ public sealed class Document : IDocument, INotifyPropertyChanged
     /// <remarks><inheritdoc cref="Changing"/></remarks>
     public event EventHandler<DocumentChangeEventArgs> Changed;
 
-    private event EventHandler<TextChangeEventArgs> textChanged;
+    private event EventHandler<ChangeEventArgs> textChanged;
 
     /// <summary>
     /// Event raised after <see cref="Text"/> property changed.
     /// </summary>
     public event EventHandler? TextChanged;
 
-    event EventHandler<TextChangeEventArgs> IDocument.TextChanged
-    {
+    event EventHandler<ChangeEventArgs> IDocument.TextChanged {
         add { textChanged += value; }
         remove { textChanged -= value; }
     }
@@ -396,11 +391,11 @@ public sealed class Document : IDocument, INotifyPropertyChanged
     /// </para><para>
     /// </para>
     /// </remarks>
-    public ITextSource CreateSnapshot()
+    public ISource CreateSnapshot()
     {
         lock (_lock)
         {
-            return new TextSource(charTree, checkpointProvider.Current);
+            return new Source(charTree, checkpointProvider.Current);
         }
     }
 
@@ -408,11 +403,11 @@ public sealed class Document : IDocument, INotifyPropertyChanged
     /// Creates a snapshot of a part of the current text.
     /// </summary>
     /// <remarks><inheritdoc cref="CreateSnapshot()"/></remarks>
-    public ITextSource CreateSnapshot(int offset, int length)
+    public ISource CreateSnapshot(int offset, int length)
     {
         lock (_lock)
         {
-            return new TextSource(charTree.Slice(offset, length));
+            return new Source(charTree.Slice(offset, length));
         }
     }
 
@@ -459,8 +454,7 @@ public sealed class Document : IDocument, INotifyPropertyChanged
     /// Whether an update is running.
     /// </summary>
     /// <remarks><inheritdoc cref="BeginUpdate"/></remarks>
-    public bool IsUpdating
-    {
+    public bool IsUpdating {
         get
         {
             VerifyAccess();
@@ -498,11 +492,11 @@ public sealed class Document : IDocument, INotifyPropertyChanged
         }
 
         updateCount++;
-        
+
         if (updateCount == 1)
         {
             undoStack.StartUndoGroup();
-            
+
             UpdateStarted?.Invoke(this, EventArgs.Empty);
         }
     }
@@ -513,7 +507,7 @@ public sealed class Document : IDocument, INotifyPropertyChanged
     public void EndUpdate()
     {
         VerifyAccess();
-        
+
         if (isDocumentChanging)
         {
             throw new InvalidOperationException("Cannot end update within document change.");
@@ -529,11 +523,11 @@ public sealed class Document : IDocument, INotifyPropertyChanged
             // fire change events **inside** the change group: event handlers can add
             // document changes to the change group
             FireChangeEvents();
-            
+
             undoStack.EndUndoGroup();
-            
+
             updateCount = 0;
-            
+
             UpdateFinished?.Invoke(this, EventArgs.Empty);
         }
         else
@@ -559,14 +553,14 @@ public sealed class Document : IDocument, INotifyPropertyChanged
     /// Anchors positioned exactly at the insertion offset will move according
     /// to their movement type--behind the inserted text by default.
     /// </remarks>
-    public void Insert(int offset, string text) => Replace(offset, 0, new StringTextSource(text));
+    public void Insert(int offset, string text) => Replace(offset, 0, new StringSource(text));
 
     /// <summary>
     /// Inserts text.
     /// </summary>
     /// <param name="offset">The offset at which the text is inserted.</param>
     /// <param name="text">The new text.</param>
-    public void Insert(int offset, ITextSource text) => Replace(offset, 0, text);
+    public void Insert(int offset, ISource text) => Replace(offset, 0, text);
 
     /// <summary>
     /// Inserts text.
@@ -582,11 +576,11 @@ public sealed class Document : IDocument, INotifyPropertyChanged
     {
         if (movementType == AnchorMovementType.BeforeInsertion)
         {
-            Replace(offset, 0, new StringTextSource(text), ChangeOffsetType.KeepAnchorsInFront);
+            Replace(offset, 0, new StringSource(text), ChangeOffsetType.KeepAnchorsInFront);
         }
         else
         {
-            Replace(offset, 0, new StringTextSource(text));
+            Replace(offset, 0, new StringSource(text));
         }
     }
 
@@ -600,7 +594,7 @@ public sealed class Document : IDocument, INotifyPropertyChanged
     /// For AnchorMovementType.Default, they will move according to the movement type specified by this parameter.
     /// The caret will also move according to the <paramref name="movementType"/> parameter.
     /// </param>
-    public void Insert(int offset, ITextSource text, AnchorMovementType movementType)
+    public void Insert(int offset, ISource text, AnchorMovementType movementType)
     {
         if (movementType == AnchorMovementType.BeforeInsertion)
         {
@@ -622,7 +616,7 @@ public sealed class Document : IDocument, INotifyPropertyChanged
     /// </summary>
     /// <param name="offset">Starting offset of the text to be removed.</param>
     /// <param name="length">Length of the text to be removed.</param>
-    public void Remove(int offset, int length) => Replace(offset, length, StringTextSource.Empty);
+    public void Remove(int offset, int length) => Replace(offset, length, StringSource.Empty);
 
     internal bool isDocumentChanging;
 
@@ -636,13 +630,13 @@ public sealed class Document : IDocument, INotifyPropertyChanged
             throw new ArgumentNullException(nameof(segment));
         }
 
-        Replace(segment.Offset, segment.Length, new StringTextSource(text));
+        Replace(segment.Offset, segment.Length, new StringSource(text));
     }
 
     /// <summary>
     /// Replace text within the document.
     /// </summary>
-    public void Replace(ISegment segment, ITextSource text)
+    public void Replace(ISegment segment, ISource text)
     {
         if (segment == null)
         {
@@ -658,7 +652,7 @@ public sealed class Document : IDocument, INotifyPropertyChanged
     /// <param name="offset">The starting offset of the text to be replaced.</param>
     /// <param name="length">The length of the text to be replaced.</param>
     /// <param name="text">The new text.</param>
-    public void Replace(int offset, int length, string text) => Replace(offset, length, new StringTextSource(text));
+    public void Replace(int offset, int length, string text) => Replace(offset, length, new StringSource(text));
 
     /// <summary>
     /// Replace text within the document.
@@ -666,7 +660,7 @@ public sealed class Document : IDocument, INotifyPropertyChanged
     /// <param name="offset">The starting offset of the text to be replaced.</param>
     /// <param name="length">The length of the text to be replaced.</param>
     /// <param name="text">The new text.</param>
-    public void Replace(int offset, int length, ITextSource text) => Replace(offset, length, text, null!);
+    public void Replace(int offset, int length, ISource text) => Replace(offset, length, text, null!);
 
     /// <summary>
     /// Replace text within the document.
@@ -676,7 +670,7 @@ public sealed class Document : IDocument, INotifyPropertyChanged
     /// <param name="text">The new text.</param>
     /// <param name="changeOffsetType">The offsetChangeMappingType determines how offsets inside the old text are mapped to the new text.
     /// This affects how the anchors and segments inside the replaced region behave.</param>
-    public void Replace(int offset, int length, string text, ChangeOffsetType changeOffsetType) => Replace(offset, length, new StringTextSource(text), changeOffsetType);
+    public void Replace(int offset, int length, string text, ChangeOffsetType changeOffsetType) => Replace(offset, length, new StringSource(text), changeOffsetType);
 
     /// <summary>
     /// Replaces text.
@@ -688,7 +682,7 @@ public sealed class Document : IDocument, INotifyPropertyChanged
     /// This affects how the anchors and segments inside the replaced region behave.</param>
     /// <remarks><see cref="ChangeOffsetType.ReplaceCharacters"/> to see why the last character
     /// must be replaced.</remarks>
-    public void Replace(int offset, int length, ITextSource text, ChangeOffsetType changeOffsetType)
+    public void Replace(int offset, int length, ISource text, ChangeOffsetType changeOffsetType)
     {
         if (text is null)
         {
@@ -701,13 +695,13 @@ public sealed class Document : IDocument, INotifyPropertyChanged
 
                 Replace(offset, length, text);
                 break;
-            
+
             case ChangeOffsetType.KeepAnchorsInFront:
 
                 Replace(offset, length, text, new ChangeOffsetCollection(
                     new ChangeOffset(offset, length, text.TextLength, false, true)));
                 break;
-            
+
             case ChangeOffsetType.RemoveThenInsert:
 
                 if (length == 0 || text.TextLength == 0)
@@ -724,14 +718,14 @@ public sealed class Document : IDocument, INotifyPropertyChanged
                     };
 
                     changes.Freeze();
-                    
+
                     Replace(offset, length, text, changes);
                 }
 
                 break;
-            
+
             case ChangeOffsetType.ReplaceCharacters:
-                
+
                 if (length == 0 || text.TextLength == 0)
                 {
                     Replace(offset, length, text);
@@ -739,13 +733,13 @@ public sealed class Document : IDocument, INotifyPropertyChanged
                 else if (text.TextLength > length)
                 {
                     var change = new ChangeOffset(offset + length - 1, 1, 1 + text.TextLength - length);
-                    
+
                     Replace(offset, length, text, new ChangeOffsetCollection(change));
                 }
                 else if (text.TextLength < length)
                 {
                     var change = new ChangeOffset(offset + text.TextLength, length - text.TextLength, 0, true, false);
-                    
+
                     Replace(offset, length, text, new ChangeOffsetCollection(change));
                 }
                 else
@@ -754,7 +748,7 @@ public sealed class Document : IDocument, INotifyPropertyChanged
                 }
 
                 break;
-            
+
             default:
                 throw new ArgumentOutOfRangeException(nameof(changeOffsetType), $"Invalid enum {changeOffsetType} value.");
         }
@@ -775,7 +769,7 @@ public sealed class Document : IDocument, INotifyPropertyChanged
     /// <para>The collection must always be a valid explanation for the
     /// document change--see <see cref="ChangeOffsetCollection.IsValidForDocumentChange"/></para>
     /// </param>
-    public void Replace(int offset, int length, string text, ChangeOffsetCollection changeOffsetColl) => Replace(offset, length, new StringTextSource(text), changeOffsetColl);
+    public void Replace(int offset, int length, string text, ChangeOffsetCollection changeOffsetColl) => Replace(offset, length, new StringSource(text), changeOffsetColl);
 
     /// <summary>
     /// Replaces text within the document.
@@ -784,7 +778,7 @@ public sealed class Document : IDocument, INotifyPropertyChanged
     /// <param name="length">The length of the text to be replaced.</param>
     /// <param name="text">The new text.</param>
     /// <param name="changeOffsetColl">How to map old text offsets to the new text.</param>
-    public void Replace(int offset, int length, ITextSource text, ChangeOffsetCollection changeOffsetColl = null!)
+    public void Replace(int offset, int length, ISource text, ChangeOffsetCollection changeOffsetColl = null!)
     {
         text = (text ?? throw new ArgumentNullException(nameof(text)))
             .CreateSnapshot();
@@ -826,7 +820,7 @@ public sealed class Document : IDocument, INotifyPropertyChanged
         }
     }
 
-    private void DoReplace(int offset, int length, ITextSource newText, ChangeOffsetCollection changeOffsetColl)
+    private void DoReplace(int offset, int length, ISource newText, ChangeOffsetCollection changeOffsetColl)
     {
         if (length == 0 && newText.TextLength == 0)
         {
@@ -840,20 +834,20 @@ public sealed class Document : IDocument, INotifyPropertyChanged
             changeOffsetColl = ChangeOffsetCollection.Empty;
         }
 
-        ITextSource removedText;
+        ISource removedText;
 
         if (length == 0)
         {
-            removedText = StringTextSource.Empty;
+            removedText = StringSource.Empty;
         }
         else if (length < 100)
         {
-            removedText = new StringTextSource(charTree.ToString(offset, length));
+            removedText = new StringSource(charTree.ToString(offset, length));
         }
         else
         {
             // use a tree if the removed string is long
-            removedText = new TextSource(charTree.Slice(offset, length));
+            removedText = new Source(charTree.Slice(offset, length));
         }
 
         DocumentChangeEventArgs args = new(offset, removedText, newText, changeOffsetColl);
@@ -867,7 +861,7 @@ public sealed class Document : IDocument, INotifyPropertyChanged
 
         cachedText = null;
         fireTextChanged = true;
-        
+
         var eventQueue = new EventQueue();
 
         lock (_lock)
@@ -880,7 +874,7 @@ public sealed class Document : IDocument, INotifyPropertyChanged
                 // optimize replacing the whole document
                 charTree.Clear();
 
-                if (newText is TextSource textSource)
+                if (newText is Source textSource)
                 {
                     charTree.InsertAt(0, textSource.GetTree());
                 }
@@ -898,7 +892,7 @@ public sealed class Document : IDocument, INotifyPropertyChanged
 #if DEBUG
                 lineTree.ValidateData();
 #endif
-                if (newText is TextSource textSource)
+                if (newText is Source textSource)
                 {
                     charTree.InsertAt(offset, textSource.GetTree());
                 }
@@ -1024,8 +1018,7 @@ public sealed class Document : IDocument, INotifyPropertyChanged
     /// Gets the list of <see cref="ILineTracker"/>s attached to this document.
     /// You can add custom line trackers to this list.
     /// </summary>
-    public IList<ILineTracker> LineTrackers
-    {
+    public IList<ILineTracker> LineTrackers {
         get
         {
             VerifyAccess();
@@ -1041,8 +1034,7 @@ public sealed class Document : IDocument, INotifyPropertyChanged
     /// Gets the <see cref="UndoStack"/> of the document.
     /// </summary>
     /// <remarks>This property can also be used to set the undo stack, e.g. for sharing a common undo stack between multiple documents.</remarks>
-    public UndoStack UndoStack
-    {
+    public UndoStack UndoStack {
         get { return undoStack; }
         set
         {
@@ -1067,7 +1059,7 @@ public sealed class Document : IDocument, INotifyPropertyChanged
     /// Creates a new <see cref="Anchor"/> at the specified offset.
     /// </summary>
     /// <inheritdoc cref="Anchor" select="remarks|example"/>
-    public Anchor CreateAnchor(int offset)
+    public Anchor CreateAnchor(int offset, bool surivesDeletion = false)
     {
         VerifyAccess();
 
@@ -1075,10 +1067,15 @@ public sealed class Document : IDocument, INotifyPropertyChanged
         {
             throw new ArgumentOutOfRangeException(nameof(offset), offset, "0 <= offset <= " + charTree.Length.ToString(CultureInfo.InvariantCulture));
         }
-        return anchorTree.CreateAnchor(offset);
+
+        var anchor = anchorTree.CreateAnchor(offset);
+
+        anchor.SurvivesDeletion = surivesDeletion;
+
+        return anchor;
     }
 
-    IAnchor IDocument.CreateAnchor(int offset) => CreateAnchor(offset);
+    IAnchor IDocument.CreateAnchor(int offset, bool surivesDeletion) => CreateAnchor(offset, surivesDeletion);
     #endregion
 
     #region LineCount
@@ -1086,8 +1083,7 @@ public sealed class Document : IDocument, INotifyPropertyChanged
     /// Gets the total number of lines in the document.
     /// Runtime: O(1).
     /// </summary>
-    public int LineCount
-    {
+    public int LineCount {
         get
         {
             VerifyAccess();
@@ -1135,8 +1131,7 @@ public sealed class Document : IDocument, INotifyPropertyChanged
     /// By default, every TextDocument has its own ServiceContainer; and has the document itself
     /// registered as <see cref="IDocument"/> and <see cref="Document"/>.
     /// </summary>
-    public IServiceProvider ServiceProvider
-    {
+    public IServiceProvider ServiceProvider {
         get
         {
             VerifyAccess();
@@ -1173,8 +1168,7 @@ public sealed class Document : IDocument, INotifyPropertyChanged
     private void OnFileNameChanged(EventArgs e) => FileNameChanged?.Invoke(this, e);
 
     /// <inheritdoc/>
-    public string FileName
-    {
+    public string FileName {
         get { return fileName; }
         set
         {

@@ -6,11 +6,11 @@ namespace Stellar.WPF.Document;
 /// Describes a change of the document text. Thread-safe.
 /// </summary>
 [Serializable]
-public class TextChangeEventArgs : EventArgs
+public class ChangeEventArgs : EventArgs
 {
     private readonly int offset;
-    private readonly ITextSource removedText;
-    private readonly ITextSource insertedText;
+    private readonly ISource removedText;
+    private readonly ISource insertedText;
 
     /// <summary>
     /// The offset at which the change occurs.
@@ -20,7 +20,7 @@ public class TextChangeEventArgs : EventArgs
     /// <summary>
     /// The removed text.
     /// </summary>
-    public ITextSource RemovedText => removedText;
+    public ISource RemovedText => removedText;
 
     /// <summary>
     /// The number of characters removed.
@@ -30,7 +30,7 @@ public class TextChangeEventArgs : EventArgs
     /// <summary>
     /// The inserted text.
     /// </summary>
-    public ITextSource InsertedText => insertedText;
+    public ISource InsertedText => insertedText;
 
     /// <summary>
     /// The number of characters inserted.
@@ -40,27 +40,27 @@ public class TextChangeEventArgs : EventArgs
     /// <summary>
     /// Constructor.
     /// </summary>
-    public TextChangeEventArgs(int offset, string removedText, string insertedText)
+    public ChangeEventArgs(int offset, string removedText, string insertedText)
     {
         this.offset = offset < 0
             ? throw new ArgumentOutOfRangeException(nameof(offset), offset, "offset cannot be negative")
             : offset;
 
-        this.removedText = removedText != null ? new StringTextSource(removedText) : StringTextSource.Empty;
-        this.insertedText = insertedText != null ? new StringTextSource(insertedText) : StringTextSource.Empty;
+        this.removedText = removedText != null ? new StringSource(removedText) : StringSource.Empty;
+        this.insertedText = insertedText != null ? new StringSource(insertedText) : StringSource.Empty;
     }
 
     /// <summary>
     /// Creates a new TextChangeEventArgs object.
     /// </summary>
-    public TextChangeEventArgs(int offset, ITextSource removedText, ITextSource insertedText)
+    public ChangeEventArgs(int offset, ISource removedText, ISource insertedText)
     {
         this.offset = offset < 0
             ? throw new ArgumentOutOfRangeException(nameof(offset), offset, "offset cannot be negative")
             : offset;
 
-        this.removedText = removedText ?? StringTextSource.Empty;
-        this.insertedText = insertedText ?? StringTextSource.Empty;
+        this.removedText = removedText ?? StringSource.Empty;
+        this.insertedText = insertedText ?? StringSource.Empty;
     }
 
     /// <summary>
@@ -83,5 +83,5 @@ public class TextChangeEventArgs : EventArgs
     /// <summary>
     /// Creates TextChangeEventArgs for the reverse change.
     /// </summary>
-    public virtual TextChangeEventArgs Invert() => new(offset, insertedText, removedText);
+    public virtual ChangeEventArgs Invert() => new(offset, insertedText, removedText);
 }

@@ -20,7 +20,7 @@ public class CheckpointProvider
     /// Replaces the current checkpoint with a new one.
     /// </summary>
     /// <param name="change">Change from the current checkpoint to the new one</param>
-    public void Append(TextChangeEventArgs change)
+    public void Append(ChangeEventArgs change)
     {
         current.change = change ?? throw new ArgumentNullException(nameof(change));
 

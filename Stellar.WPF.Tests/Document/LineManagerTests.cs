@@ -139,7 +139,7 @@ public class LineManagerTests
     public void ThrowsOnNullArgument()
     {
         Assert.Throws<ArgumentNullException>(() => document.Insert(0, (string)null!));
-        Assert.Throws<ArgumentNullException>(() => document.Insert(0, (ITextSource)null!));
+        Assert.Throws<ArgumentNullException>(() => document.Insert(0, (ISource)null!));
         Assert.Throws<ArgumentNullException>(() => document.Text = null!);
     }
 

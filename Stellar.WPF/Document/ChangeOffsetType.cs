@@ -38,7 +38,7 @@
         /// text segment: a simple insertion of the additional text would move anchors immediately after the replaced text
         /// into the replacement text if the movement type is 'before insertion'.
         /// Shrinking text is implemented by removing the text segment that's too long but in a special mode that
-        /// causes anchors to always survive irrespective of their <see cref="Anchor.SurviveDeletion"/> setting.
+        /// causes anchors to always survive irrespective of their <see cref="Anchor.SurvivesDeletion"/> setting.
         /// If the text keeps its old size, this is implemented as OffsetChanges.Empty.
         /// </remarks>
         ReplaceCharacters,

@@ -171,7 +171,7 @@ internal sealed class LineManager
     #endregion
 
     #region Insert
-    public void Insert(int offset, ITextSource text)
+    public void Insert(int offset, ISource text)
     {
         var line = lineTree.LineBy(offset);
         var lineOffset = line.Offset;

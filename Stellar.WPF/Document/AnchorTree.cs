@@ -209,7 +209,7 @@ internal sealed class AnchorTree
         {
             var anchor = node.Target as Anchor;
 
-            if (anchor is not null && (anchor.SurviveDeletion || change.RemovalNeverCausesAnchorDeletion))
+            if (anchor is not null && (anchor.SurvivesDeletion || change.RemovalNeverCausesAnchorDeletion))
             {
                 firstDeletionSurvivor ??= node;
 

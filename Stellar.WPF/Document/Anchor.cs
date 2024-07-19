@@ -22,7 +22,7 @@ public sealed class Anchor : IAnchor
     public AnchorMovementType MovementType { get; set; }
 
     /// <inheritdoc/>
-    public bool SurviveDeletion { get; set; }
+    public bool SurvivesDeletion { get; set; }
 
     /// <inheritdoc/>
     public bool IsDeleted

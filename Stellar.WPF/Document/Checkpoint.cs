@@ -15,7 +15,7 @@ internal sealed class Checkpoint : ICheckpoint
     private readonly int id;
 
     // the change from this checkpoint to the next
-    internal TextChangeEventArgs? change;
+    internal ChangeEventArgs? change;
     internal Checkpoint? next;
 
     internal Checkpoint(CheckpointProvider provider)
@@ -52,7 +52,7 @@ internal sealed class Checkpoint : ICheckpoint
         return Math.Sign(unchecked(id - other.id));
     }
 
-    public IEnumerable<TextChangeEventArgs> GetChangesUpTo(ICheckpoint checkpoint)
+    public IEnumerable<ChangeEventArgs> GetChangesUpTo(ICheckpoint checkpoint)
     {
         var result = GetDistanceTo(checkpoint);
 
@@ -68,13 +68,13 @@ internal sealed class Checkpoint : ICheckpoint
             return other.GetForwardChanges(this).Reverse().Select(change => change.Invert());
         }
 
-        return Array.Empty<TextChangeEventArgs>();
+        return Array.Empty<ChangeEventArgs>();
     }
 
     /// <summary>
     /// Get changes from [this, other).
     /// </summary>
-    private IEnumerable<TextChangeEventArgs> GetForwardChanges(Checkpoint other)
+    private IEnumerable<ChangeEventArgs> GetForwardChanges(Checkpoint other)
     {
         for (var checkpoint = this; checkpoint != other; checkpoint = checkpoint?.next)
         {

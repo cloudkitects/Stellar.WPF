@@ -693,7 +693,7 @@ namespace Stellar.WPF.Editing
 
         bool IScrollInfo.CanVerticallyScroll
         {
-            get => scrollInfo is not null ? scrollInfo.CanVerticallyScroll : false;
+            get => scrollInfo is not null && scrollInfo.CanVerticallyScroll;
             set
             {
                 canVerticallyScroll = value;
@@ -706,7 +706,7 @@ namespace Stellar.WPF.Editing
 
         bool IScrollInfo.CanHorizontallyScroll
         {
-            get => scrollInfo is not null ? scrollInfo.CanHorizontallyScroll : false;
+            get => scrollInfo is not null && scrollInfo.CanHorizontallyScroll;
             set
             {
                 canHorizontallyScroll = value;

@@ -52,7 +52,7 @@ class TextAreaAutomationPeer : FrameworkElementAutomationPeer, IValueProvider, I
         if (TextArea.Selection.IsEmpty)
         {
             var anchor = TextArea.Document.CreateAnchor(TextArea.Caret.Offset);
-            anchor.SurviveDeletion = true;
+            anchor.SurvivesDeletion = true;
             return new ITextRangeProvider[] { new TextRangeProvider(TextArea, TextArea.Document, new AnchorSegment(anchor, anchor)) };
         }
         return TextArea.Selection.Segments.Select(s => new TextRangeProvider(TextArea, TextArea.Document, s)).ToArray();

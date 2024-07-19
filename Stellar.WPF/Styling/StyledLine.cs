@@ -356,11 +356,11 @@ public class StyledLine
     /// <summary>
     /// Produces HTML code for a section of the line, with &lt;span class="colorName"&gt; tags.
     /// </summary>
-    public string ToHtml(int startOffset, int endOffset, HtmlOptions options = null)
+    public string ToHtml(int startOffset, int endOffset, HtmlOptions? options = null)
     {
         var writer = new StringWriter(CultureInfo.InvariantCulture);
         
-        using (var htmlWriter = new HtmlStyledTextWriter(writer, options))
+        using (var htmlWriter = new HtmlStyledTextWriter(writer, options!))
         {
             WriteTo(htmlWriter, startOffset, endOffset);
         }
