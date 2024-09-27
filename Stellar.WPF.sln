@@ -12,6 +12,8 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Solution Items", "Solution 
 		.editorconfig = .editorconfig
 	EndProjectSection
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Stellar.WPF.Sample", "Stellar.WPF.Sample\Stellar.WPF.Sample.csproj", "{9A8DB4E8-0BC7-430C-A1D3-BE62E42806D0}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -26,6 +28,10 @@ Global
 		{5C3695D7-BEDD-47A5-B69F-E4CC9845A184}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{5C3695D7-BEDD-47A5-B69F-E4CC9845A184}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{5C3695D7-BEDD-47A5-B69F-E4CC9845A184}.Release|Any CPU.Build.0 = Release|Any CPU
+		{9A8DB4E8-0BC7-430C-A1D3-BE62E42806D0}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{9A8DB4E8-0BC7-430C-A1D3-BE62E42806D0}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{9A8DB4E8-0BC7-430C-A1D3-BE62E42806D0}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{9A8DB4E8-0BC7-430C-A1D3-BE62E42806D0}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

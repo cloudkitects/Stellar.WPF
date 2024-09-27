@@ -7,7 +7,7 @@ namespace Stellar.WPF.Document;
 /// updated when text is inserted/removed in front of it.
 /// </summary>
 /// <remarks>
-/// <para>Use the <see cref="IAnchor.Offset"/> property to get the offset from an anchor.
+/// <para>Use the <see cref="Offset"/> property to get the offset from an anchor.
 /// Use the <see cref="IDocument.CreateAnchor"/> method to create an anchor from an offset.
 /// </para>
 /// <para>

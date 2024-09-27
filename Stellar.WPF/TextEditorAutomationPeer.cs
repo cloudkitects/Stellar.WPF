@@ -8,7 +8,7 @@ using Stellar.WPF.Utilities;
 namespace Stellar.WPF
 {
     /// <summary>
-    /// Exposes <see cref="Stellar.WPF.TextEditor"/> to automation.
+    /// Exposes <see cref="WPF.TextEditor"/> to automation.
     /// </summary>
     public class TextEditorAutomationPeer : FrameworkElementAutomationPeer, IValueProvider
     {

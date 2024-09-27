@@ -48,7 +48,7 @@ public class Span
     /// <summary>
     /// Gets/Sets the rule set that applies inside this span.
     /// </summary>
-    public RuleSet RuleSet { get; set; } = new();
+    public Context RuleSet { get; set; } = new();
 
     /// <inheritdoc/>
     public override string ToString()

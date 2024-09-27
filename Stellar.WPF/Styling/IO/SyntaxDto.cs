@@ -15,5 +15,5 @@ public class SyntaxDto
 
     public IList<StyleDto> Styles { get; internal set; } = new NullSafeCollection<StyleDto>();
 
-    public IList<RuleSetDto> RuleSets { get; internal set; } = new NullSafeCollection<RuleSetDto>();
+    public IList<ContextDto> RuleSets { get; internal set; } = new NullSafeCollection<ContextDto>();
 }

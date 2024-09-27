@@ -11,7 +11,7 @@ namespace Stellar.WPF.Editing;
 /// </summary>
 /// <remarks>
 /// <para>
-/// There is one active input handler per text area (<see cref="Editing.TextArea.ActiveInputHandler"/>), plus
+/// There is one active input handler per text area (<see cref="TextArea.ActiveInputHandler"/>), plus
 /// a number of active stacked input handlers.
 /// </para>
 /// <para>

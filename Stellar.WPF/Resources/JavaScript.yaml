@@ -2,7 +2,7 @@
 # converted to AvalonEdit format by Siegfried Pammer in 2010
 # converted to Stellar.Editor (yaml) by Hector J. Rivas in 2023
 name: JavaScript
-extensions: [js]
+extensions: [js,json]
 
 styles:
 - &keywords
@@ -13,8 +13,6 @@ styles:
   foreground: Green
 - &digits
   foreground: DarkBlue
-- &attribs
-  foreground: Magenta
 
 ruleSets:
 - &commentMarkers
@@ -25,7 +23,7 @@ ruleSets:
       fontWeight: bold
 
 - &xmlDocComments
-  import: XmlDoc.Comments
+  imports: XmlDoc.Comments
 
 - rules:
   - keywords:
@@ -56,10 +54,6 @@ ruleSets:
     style: *comments
     ruleSets:
     - *commentMarkers
-
-  - span: '['
-    stop: ']'
-    style: *attribs
 
   - rule: \b0[xX][0-9a-fA-F]+|(\b\d+(\.[0-9]+)?|\.[0-9]+)([eE][+-]?[0-9]+)?
     style: *digits

@@ -4,6 +4,14 @@ using YamlDotNet.Serialization;
 
 namespace Stellar.WPF.Styling.IO;
 
+/// <summary>
+/// A rule DTO.
+/// </summary>
+/// <remarks>
+/// Everything's declared optional so that it can be omitted when serializing,
+/// but the loader will throw for invalid constructs. Either Keywords, Span or
+/// Rule must be defined, and Style is required (and YAML.net has no such priovisions).
+/// </remarks>
 public class RuleDto
 {
     [YamlMember(DefaultValuesHandling = DefaultValuesHandling.OmitNull)]
@@ -25,8 +33,8 @@ public class RuleDto
     public bool? Multiline { get; set; }
 
     [YamlMember(DefaultValuesHandling = DefaultValuesHandling.OmitNull)]
-    public IList<RuleSetDto>? RuleSets { get; set; }
+    public IList<ContextDto>? RuleSets { get; set; }
 
     [YamlMember(DefaultValuesHandling = DefaultValuesHandling.OmitNull)]
-    public StyleDto? Style { get; set; }
+    public StyleDto Style { get; set; } = new();
 }

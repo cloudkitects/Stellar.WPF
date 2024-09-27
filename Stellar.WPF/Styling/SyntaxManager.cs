@@ -2,13 +2,15 @@
 using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
+using System.Diagnostics;
+using System.Linq;
 
 namespace Stellar.WPF.Styling;
 
 /// <summary>
-/// The thread-safe styling manager singleton.
+/// The thread-safe syntax manager singleton.
 /// </summary>
-internal class StylingManager
+public class SyntaxManager : ISyntaxResolver
 {
     /// <summary>
     /// A lazy-loaded syntax, i.e., loaded once on-demand
@@ -36,15 +38,7 @@ internal class StylingManager
 
         string ISyntax.Name => name;
 
-        RuleSet ISyntax.RuleSet => LoadSyntax().RuleSet;
-
-        IEnumerable<Style> ISyntax.NamedStyles => LoadSyntax().NamedStyles;
-
-        IDictionary<string, string> ISyntax.Properties => LoadSyntax().Properties;
-
-        RuleSet ISyntax.GetRuleSet(string name) => LoadSyntax().GetRuleSet(name);
-
-        Style ISyntax.GetStyle(string name) => LoadSyntax().GetStyle(name);
+        Context ISyntax.RuleSet => LoadSyntax().RuleSet;
 
         public override string ToString() => name;
 
@@ -197,13 +191,7 @@ internal class StylingManager
         RegisterSyntax(name, extensions, new LazyLoadedSyntax(name, loader));
     }
 
-    /// <summary>
-    /// Gets the default StylingManager instance.
-    /// The default StylingManager comes with built-in highlightings.
-    /// </summary>
-    public static StylingManager Instance => DefaultStylingManager.Instance;
-
-    internal sealed class DefaultStylingManager : StylingManager
+    internal sealed class DefaultStylingManager : SyntaxManager
     {
         public new static readonly DefaultStylingManager Instance = new();
 
@@ -218,23 +206,22 @@ internal class StylingManager
             try
             {
 #if DEBUG
-                // don't use lazy-loading in debug builds, show errors immediately
-                //Xshd.XshdSyntaxDefinition xshd;
+                // show errors immediately
+                var dto = IO.Loader.Load(resource);
                 
-                //using (var s = Resources.OpenStream(resource))
-                //{
-                //    using var reader = new XmlTextReader(s);
-                //    xshd = Xshd.HighlightingLoader.LoadXshd(reader, false);
-                //}
+                Debug.Assert(dto is not null);
 
-                //Debug.Assert(name == xshd.Name);
-                //Debug.Assert(extensions is not null
-                //    ? Enumerable.SequenceEqual(extensions, xshd.Extensions)
-                //    :xshd.Extensions.Count == 0);
+                Debug.Assert(dto.Name == name);
+                Debug.Assert(extensions is null
+                    ? dto.Extensions.Count == 0
+                    : Enumerable.SequenceEqual(extensions, dto.Extensions));
+
+                //RegisterSyntax(name, extensions, IO.Loader.L)
+
 
                 //RegisterSyntax(name, extensions, Xshd.HighlightingLoader.Load(xshd, this));
 #else
-					RegisterSyntax(name, extensions, LoadSyntax(resourceName));
+					RegisterSyntax(name, extensions, LoadSyntax(resource));
 #endif
             }
             //catch (HighlightingDefinitionInvalidException ex)
@@ -266,4 +253,10 @@ internal class StylingManager
             return func;
         }
     }
+
+    /// <summary>
+    /// Gets the default StylingManager instance.
+    /// The default StylingManager comes with built-in highlightings.
+    /// </summary>
+    public static SyntaxManager Instance => DefaultStylingManager.Instance;
 }

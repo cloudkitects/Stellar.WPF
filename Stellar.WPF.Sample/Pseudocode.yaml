@@ -1,0 +1,40 @@
+﻿name: pseudocode
+extensions: []
+
+styles:
+- &string
+  foreground: Blue
+- &comments
+  foreground: Green
+
+ruleSets:
+  rules:
+  - keywords: if else
+    style:
+      foreground: blue
+      fontWeight: bold
+
+  - keywords: Stellar
+    style:
+      foreground: blue
+      fontWeight: bold
+      fontStyle: italic
+
+  - span: ///(?!/)
+    style: *comments
+
+  - span: //
+    style: *comments
+
+  - span: '/*'
+    stop: '*/'
+    multiline: true
+    style: *comments
+
+  - span: \"
+    stop: \"
+    style: *string
+  
+  - rule: \b0[xX][0-9a-fA-F]+|(\b\d+(\.[0-9]+)?|\.[0-9]+)([eE][+-]?[0-9]+)?
+    style:
+      foreground: DarkBlue

@@ -6,10 +6,10 @@ using Stellar.WPF.Utilities;
 namespace Stellar.WPF.Styling;
 
 /// <summary>
-/// A composite of spans and their highlighting (styling) rules.
+/// A context holds a collection of spans and rules. 
 /// </summary>
 [Serializable]
-public class RuleSet
+public class Context
 {
     /// <summary>
     /// Gets the list of spans.
@@ -29,7 +29,7 @@ public class RuleSet
     /// <summary>
     /// Creates a new RuleSet instance.
     /// </summary>
-    public RuleSet()
+    public Context()
     {
         Spans = new NullSafeCollection<Span>();
         Rules = new NullSafeCollection<Rule>();

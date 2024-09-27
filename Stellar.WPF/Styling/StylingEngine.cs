@@ -16,7 +16,7 @@ namespace Stellar.WPF.Styling
     public class StylingEngine
     {
         #region fields and props
-        private readonly RuleSet ruleSet;
+        private readonly Context ruleSet;
 
         // local variables from HighlightLineInternal (accessed by HighlighLine helper methods)
         private string lineText = string.Empty;
@@ -46,7 +46,7 @@ namespace Stellar.WPF.Styling
         /// <summary>
         /// Creates a new styling engine instance.
         /// </summary>
-        public StylingEngine(RuleSet ruleSet)
+        public StylingEngine(Context ruleSet)
         {
             this.ruleSet = ruleSet ?? throw new ArgumentNullException(nameof(ruleSet));
         }
@@ -55,7 +55,7 @@ namespace Stellar.WPF.Styling
         /// The rule set passed-in to the constructor or the
         /// current span's rule set if actively styling.
         /// </summary>
-        private RuleSet GetCurrentRuleSet()
+        private Context GetCurrentRuleSet()
         {
             return spanStack.IsEmpty
                 ? ruleSet

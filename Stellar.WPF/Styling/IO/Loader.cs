@@ -12,21 +12,25 @@ namespace Stellar.WPF.Styling.IO;
 
 public static class Loader
 {
-    public static SyntaxDto Load(string input)
+    #region deserialize
+    /// <summary>
+    /// Load a Syntax DTO from YAML.
+    /// </summary>
+    public static SyntaxDto Load(string yaml)
     {
         var valueDeserializer = new DeserializerBuilder()
                     .WithNamingConvention(CamelCaseNamingConvention.Instance)
+                    .IgnoreUnmatchedProperties()
                     .BuildValueDeserializer();
 
         var deserializer = Deserializer.FromValueDeserializer(new AnchorNameDeserializer(valueDeserializer));
 
-        //var deserializer = new DeserializerBuilder()
-        //            .WithNamingConvention(CamelCaseNamingConvention.Instance)
-        //            .Build();
-
-        return deserializer.Deserialize<SyntaxDto>(input);
+        return deserializer.Deserialize<SyntaxDto>(yaml);
     }
 
+    /// <summary>
+    /// Load a Syntax DTO from an embedded resource's YAML contents.
+    /// </summary>
     public static SyntaxDto LoadFromResource(string name)
     {
 
@@ -36,8 +40,20 @@ public static class Loader
             _ => throw new ArgumentException("Resource not implemented", nameof(name))
         };
     }
+    #endregion
 
-    internal static Style StyleFromDto(StyleDto dto)
+    #region Load from DTOs
+    public static ISyntax Load(SyntaxDto dto, ISyntaxResolver resolver)
+    {
+        if (dto is null)
+        {
+            throw new ArgumentNullException(nameof(dto));
+        }
+
+        return new Syntax(dto, resolver);
+    }
+
+    internal static Style LoadStyle(StyleDto dto)
     {
         var style = new Style();
 
@@ -53,7 +69,7 @@ public static class Loader
             style.FontFamily = new FontFamily(dto.FontFamily);
         }
 
-        if (dto.FontSize.HasValue)
+        if (dto.FontSize >= 0)
         {
             style.FontSize = dto.FontSize;
         }
@@ -75,15 +91,8 @@ public static class Loader
             style.FontStyle = (FontStyle)(new FontStyleConverter().ConvertFrom(dto.FontStyle))!;
         }
 
-        if (dto.Underline.HasValue)
-        {
-            style.Underline = dto.Underline;
-        }
-
-        if (dto.Strikethrough.HasValue)
-        {
-            style.Strikethrough = dto.Strikethrough;
-        }
+        style.Underline = dto.Underline;
+        style.Strikethrough = dto.Strikethrough;
 
         if (!string.IsNullOrWhiteSpace(dto.Foreground))
         {
@@ -98,33 +107,67 @@ public static class Loader
         return style;
     }
 
-    internal static Rule RuleFromDto(RuleDto dto)
+    internal static Context LoadRuleSet(ContextDto dto)
     {
+        var ruleSet = new Context() { Name = dto.Name };
+
+        foreach (var rule in dto.Rules!)
+        {
+            ruleSet.Rules.Add(LoadRule(rule));
+        }
+
+        return ruleSet;
+    }
+
+    /// <summary>
+    /// Load a rule from a DTO.
+    /// </summary>
+    /// <remarks>
+    /// At a minimum, a rule has one regex and a style.
+    /// Ignore case and multiline regex options are optional.
+    /// The DTO element name dictates whether to take the regex as is or build one.
+    /// Also optional, rule sets for embedded snippets with different syntax.
+    /// </remarks>
+    internal static Rule LoadRule(RuleDto dto)
+    {
+        // check for required members
+        if ((dto.Keywords is null && dto.Span is null && dto.Rule is null) || dto.Style is null)
+        {
+            throw new ArgumentException("keywords, span or rule and style attributes are required.", nameof(dto));
+        }
+
         var rule = new Rule();
 
         var options = RegexOptions.Compiled |
             (dto.IgnoreCase == true ? RegexOptions.IgnoreCase : 0) |
-            (dto.Multiline  == true ? RegexOptions.Multiline  : 0);
+            (dto.Multiline == true ? RegexOptions.Multiline : 0);
 
         if (dto.Keywords is not null)
         {
             rule.Regex = new Regex(BuildKeywordsRegex(dto.Keywords), options);
+        }
+        else if (dto.Span is not null)
+        {
+            rule.Regex = new Regex($"{dto.Span}.*{dto.Stop}", options);
         }
         else if (dto.Rule is not null)
         {
             rule.Regex = new Regex(dto.Rule, options);
         }
 
+        // TODO: load rule sets!
 
         return rule;
     }
 
     internal static string BuildKeywordsRegex(string keywords)
     {
-        // split keywords and sort them so that "int" is captured before "in"
+        // sort so that "int" is captured before "in"
+#pragma warning disable SYSLIB1045 // Convert to 'GeneratedRegexAttribute'.
         var words = Regex.Split(keywords, @"\s+")
             .OrderByDescending(w => w.Length)
             .ToArray();
+#pragma warning restore SYSLIB1045 // Convert to 'GeneratedRegexAttribute'.
 
         var regex = new StringBuilder();
 
@@ -151,7 +194,6 @@ public static class Loader
         return regex.ToString();
     }
 
-
     /// <summary>
     /// Whether a word starts and ends with a letter or a digit, as opposed to "complex"
     /// words like -reserved, .maxstack or *bold*.
@@ -160,13 +202,5 @@ public static class Loader
     {
         return char.IsLetterOrDigit(word[0]) && char.IsLetterOrDigit(word[^1]);
     }
-
-    public static string Save(SyntaxDto syntax)
-    {
-        var serializer = new SerializerBuilder()
-            .WithNamingConvention(CamelCaseNamingConvention.Instance)
-            .Build();
-
-        return serializer.Serialize(syntax);
-    }
+    #endregion
 }

@@ -80,11 +80,6 @@ public interface IStyler : IDisposable
     void EndStyling();
 
     /// <summary>
-    /// Retrieves the style with the specified name, or null if none matching the name is found.
-    /// </summary>
-    Style GetStyle(string name);
-
-    /// <summary>
     /// The default text style.
     /// </summary>
     Style DefaultStyle { get; }

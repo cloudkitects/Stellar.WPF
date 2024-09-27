@@ -75,7 +75,7 @@ public class TextEditor : Control, ITextEditorComponent, IServiceProvider, IWeak
     /// <summary>
     /// Document property.
     /// </summary>
-    public static readonly DependencyProperty DocumentProperty
+    public static readonly DependencyProperty? DocumentProperty
         = TextView.DocumentProperty.AddOwner(
             typeof(TextEditor), new FrameworkPropertyMetadata(OnDocumentChanged));
 
@@ -92,7 +92,7 @@ public class TextEditor : Control, ITextEditorComponent, IServiceProvider, IWeak
     /// <summary>
     /// Occurs when the document property has changed.
     /// </summary>
-    public event EventHandler DocumentChanged;
+    public event EventHandler? DocumentChanged;
 
     /// <summary>
     /// Raises the <see cref="DocumentChanged"/> event.
@@ -126,7 +126,7 @@ public class TextEditor : Control, ITextEditorComponent, IServiceProvider, IWeak
     /// <summary>
     /// Options property.
     /// </summary>
-    public static readonly DependencyProperty OptionsProperty
+    public static readonly DependencyProperty? OptionsProperty
         = TextView.OptionsProperty.AddOwner(typeof(TextEditor), new FrameworkPropertyMetadata(OnOptionsChanged));
 
     /// <summary>
@@ -141,7 +141,7 @@ public class TextEditor : Control, ITextEditorComponent, IServiceProvider, IWeak
     /// <summary>
     /// Occurs when a text editor option has changed.
     /// </summary>
-    public event PropertyChangedEventHandler OptionChanged;
+    public event PropertyChangedEventHandler? OptionChanged;
 
     /// <summary>
     /// Raises the <see cref="OptionChanged"/> event.
@@ -176,7 +176,7 @@ public class TextEditor : Control, ITextEditorComponent, IServiceProvider, IWeak
             return true;
         }
         
-        if (managerType == typeof(Document.WeakDocumentEventManager.TextChanged))
+        if (managerType == typeof(WeakDocumentEventManager.TextChanged))
         {
             OnTextChanged(e);
             
@@ -233,7 +233,7 @@ public class TextEditor : Control, ITextEditorComponent, IServiceProvider, IWeak
     /// <summary>
     /// Occurs when the Text property changes.
     /// </summary>
-    public event EventHandler TextChanged;
+    public event EventHandler? TextChanged;
 
     /// <summary>
     /// Raises the <see cref="TextChanged"/> event.
@@ -243,7 +243,7 @@ public class TextEditor : Control, ITextEditorComponent, IServiceProvider, IWeak
 
     #region TextArea / ScrollViewer properties
     private readonly TextArea textArea;
-    private ScrollViewer scrollViewer;
+    private ScrollViewer? scrollViewer;
 
     /// <summary>
     /// Is called after the template was applied.
@@ -264,7 +264,7 @@ public class TextEditor : Control, ITextEditorComponent, IServiceProvider, IWeak
     /// Gets the scroll viewer used by the text editor.
     /// This property can return null if the template has not been applied / does not contain a scroll viewer.
     /// </summary>
-    internal ScrollViewer ScrollViewer => scrollViewer;
+    internal ScrollViewer ScrollViewer => scrollViewer!;
 
     private bool CanExecute(RoutedUICommand command) => command.CanExecute(null, textArea);
 
@@ -273,27 +273,27 @@ public class TextEditor : Control, ITextEditorComponent, IServiceProvider, IWeak
 
     #region Syntax highlighting
     /// <summary>
-    /// The <see cref="SyntaxHighlighting"/> property.
+    /// The <see cref="Syntax"/> property.
     /// </summary>
-    public static readonly DependencyProperty SyntaxHighlightingProperty =
-        DependencyProperty.Register("SyntaxHighlighting", typeof(ISyntax), typeof(TextEditor),
-                                    new FrameworkPropertyMetadata(OnSyntaxHighlightingChanged));
+    public static readonly DependencyProperty? SyntaxProperty =
+        DependencyProperty.Register("Syntax", typeof(ISyntax), typeof(TextEditor),
+                                    new FrameworkPropertyMetadata(OnSyntaxChanged));
 
 
     /// <summary>
     /// Gets/sets the syntax highlighting definition used to colorize the text.
     /// </summary>
-    public ISyntax SyntaxHighlighting
+    public ISyntax Syntax
     {
-        get => (ISyntax)GetValue(SyntaxHighlightingProperty);
-        set => SetValue(SyntaxHighlightingProperty, value);
+        get => (ISyntax)GetValue(SyntaxProperty);
+        set => SetValue(SyntaxProperty, value);
     }
 
-    private IRenderer renderer;
+    private IRenderer? renderer;
 
-    private static void OnSyntaxHighlightingChanged(DependencyObject d, DependencyPropertyChangedEventArgs e) => ((TextEditor)d).OnSyntaxHighlightingChanged((e.NewValue as ISyntax)!);
+    private static void OnSyntaxChanged(DependencyObject d, DependencyPropertyChangedEventArgs e) => ((TextEditor)d).OnSyntaxChanged((e.NewValue as ISyntax)!);
 
-    private void OnSyntaxHighlightingChanged(ISyntax newValue)
+    private void OnSyntaxChanged(ISyntax newValue)
     {
         if (renderer is not null)
         {
@@ -327,7 +327,7 @@ public class TextEditor : Control, ITextEditorComponent, IServiceProvider, IWeak
     /// <summary>
     /// Word wrap dependency property.
     /// </summary>
-    public static readonly DependencyProperty WordWrapProperty =
+    public static readonly DependencyProperty? WordWrapProperty =
         DependencyProperty.Register("WordWrap", typeof(bool), typeof(TextEditor),
                                     new FrameworkPropertyMetadata(Boxed.False));
 
@@ -349,14 +349,14 @@ public class TextEditor : Control, ITextEditorComponent, IServiceProvider, IWeak
     /// <summary>
     /// IsReadOnly dependency property.
     /// </summary>
-    public static readonly DependencyProperty IsReadOnlyProperty =
+    public static readonly DependencyProperty? IsReadOnlyProperty =
         DependencyProperty.Register("IsReadOnly", typeof(bool), typeof(TextEditor),
                                     new FrameworkPropertyMetadata(Boxed.False, OnIsReadOnlyChanged));
 
     /// <summary>
     /// Specifies whether the user can change the text editor content.
     /// Setting this property will replace the
-    /// <see cref="Editing.TextArea.EditableSectionProvider">TextArea.EditableSectionProvider</see>.
+    /// <see cref="TextArea.EditableSectionProvider">TextArea.EditableSectionProvider</see>.
     /// </summary>
     public bool IsReadOnly
     {
@@ -383,7 +383,7 @@ public class TextEditor : Control, ITextEditorComponent, IServiceProvider, IWeak
     /// <summary>
     /// Dependency property for <see cref="IsModified"/>
     /// </summary>
-    public static readonly DependencyProperty IsModifiedProperty =
+    public static readonly DependencyProperty? IsModifiedProperty =
         DependencyProperty.Register("IsModified", typeof(bool), typeof(TextEditor),
                                     new FrameworkPropertyMetadata(Boxed.False, OnIsModifiedChanged));
 
@@ -404,7 +404,7 @@ public class TextEditor : Control, ITextEditorComponent, IServiceProvider, IWeak
             
             if (document is not null)
             {
-                UndoStack undoStack = document.UndoStack;
+                UndoStack? undoStack = document.UndoStack;
                 
                 if ((bool)e.NewValue)
                 {
@@ -443,7 +443,7 @@ public class TextEditor : Control, ITextEditorComponent, IServiceProvider, IWeak
     /// <summary>
     /// ShowLineNumbers dependency property.
     /// </summary>
-    public static readonly DependencyProperty ShowLineNumbersProperty =
+    public static readonly DependencyProperty? ShowLineNumbersProperty =
         DependencyProperty.Register("ShowLineNumbers", typeof(bool), typeof(TextEditor),
                                     new FrameworkPropertyMetadata(Boxed.False, OnShowLineNumbersChanged));
 
@@ -458,7 +458,7 @@ public class TextEditor : Control, ITextEditorComponent, IServiceProvider, IWeak
 
     private static void OnShowLineNumbersChanged(DependencyObject d, DependencyPropertyChangedEventArgs e)
     {
-        TextEditor editor = (TextEditor)d;
+        TextEditor? editor = (TextEditor)d;
         var leftMargins = editor.TextArea.LeftMargins;
         if ((bool)e.NewValue)
         {
@@ -498,7 +498,7 @@ public class TextEditor : Control, ITextEditorComponent, IServiceProvider, IWeak
     /// <summary>
     /// LineNumbersForeground dependency property.
     /// </summary>
-    public static readonly DependencyProperty LineNumbersForegroundProperty =
+    public static readonly DependencyProperty? LineNumbersForegroundProperty =
         DependencyProperty.Register("LineNumbersForeground", typeof(System.Windows.Media.Brush), typeof(TextEditor),
                                     new FrameworkPropertyMetadata(Brushes.Gray, OnLineNumbersForegroundChanged));
 
@@ -513,7 +513,7 @@ public class TextEditor : Control, ITextEditorComponent, IServiceProvider, IWeak
 
     private static void OnLineNumbersForegroundChanged(DependencyObject d, DependencyPropertyChangedEventArgs e)
     {
-        TextEditor editor = (TextEditor)d;
+        TextEditor? editor = (TextEditor)d;
         var lineNumberMargin = editor.TextArea.LeftMargins.FirstOrDefault(margin => margin is LineNumberMargin) as LineNumberMargin; ;
 
         lineNumberMargin?.SetValue(ForegroundProperty, e.NewValue);
@@ -879,7 +879,7 @@ public class TextEditor : Control, ITextEditorComponent, IServiceProvider, IWeak
     /// </remarks>
     public void Load(Stream stream)
     {
-        using (StreamReader reader = FileReader.OpenStream(stream, Encoding ?? Encoding.UTF8))
+        using (StreamReader? reader = FileReader.OpenStream(stream, Encoding ?? Encoding.UTF8))
         {
             Text = reader.ReadToEnd();
             SetCurrentValue(EncodingProperty, reader.CurrentEncoding); // assign encoding after ReadToEnd() so that the StreamReader can autodetect the encoding
@@ -905,7 +905,7 @@ public class TextEditor : Control, ITextEditorComponent, IServiceProvider, IWeak
     /// <summary>
     /// Encoding dependency property.
     /// </summary>
-    public static readonly DependencyProperty EncodingProperty =
+    public static readonly DependencyProperty? EncodingProperty =
         DependencyProperty.Register("Encoding", typeof(Encoding), typeof(TextEditor));
 
     /// <summary>
@@ -937,7 +937,7 @@ public class TextEditor : Control, ITextEditorComponent, IServiceProvider, IWeak
 
         var encoding = Encoding;
         var document = Document;
-        StreamWriter writer = encoding is not null ? new StreamWriter(stream, encoding) : new StreamWriter(stream);
+        StreamWriter? writer = encoding is not null ? new StreamWriter(stream, encoding) : new StreamWriter(stream);
         document?.WriteTextTo(writer);
 
         writer.Flush();
@@ -965,26 +965,26 @@ public class TextEditor : Control, ITextEditorComponent, IServiceProvider, IWeak
     /// <summary>
     /// The PreviewMouseHover event.
     /// </summary>
-    public static readonly RoutedEvent PreviewMouseHoverEvent =
+    public static readonly RoutedEvent? PreviewMouseHoverEvent =
         TextView.PreviewMouseHoverEvent.AddOwner(typeof(TextEditor));
 
     /// <summary>
     /// The MouseHover event.
     /// </summary>
-    public static readonly RoutedEvent MouseHoverEvent =
+    public static readonly RoutedEvent? MouseHoverEvent =
         TextView.MouseHoverEvent.AddOwner(typeof(TextEditor));
 
 
     /// <summary>
     /// The PreviewMouseHoverStopped event.
     /// </summary>
-    public static readonly RoutedEvent PreviewMouseHoverStoppedEvent =
+    public static readonly RoutedEvent? PreviewMouseHoverStoppedEvent =
         TextView.PreviewMouseHoverStoppedEvent.AddOwner(typeof(TextEditor));
 
     /// <summary>
     /// The MouseHoverStopped event.
     /// </summary>
-    public static readonly RoutedEvent MouseHoverStoppedEvent =
+    public static readonly RoutedEvent? MouseHoverStoppedEvent =
         TextView.MouseHoverStoppedEvent.AddOwner(typeof(TextEditor));
 
 
@@ -1029,7 +1029,7 @@ public class TextEditor : Control, ITextEditorComponent, IServiceProvider, IWeak
     /// <summary>
     /// Dependency property for <see cref="HorizontalScrollBarVisibility"/>
     /// </summary>
-    public static readonly DependencyProperty HorizontalScrollBarVisibilityProperty = ScrollViewer.HorizontalScrollBarVisibilityProperty.AddOwner(typeof(TextEditor), new FrameworkPropertyMetadata(ScrollBarVisibility.Visible));
+    public static readonly DependencyProperty? HorizontalScrollBarVisibilityProperty = ScrollViewer.HorizontalScrollBarVisibilityProperty.AddOwner(typeof(TextEditor), new FrameworkPropertyMetadata(ScrollBarVisibility.Visible));
 
     /// <summary>
     /// Gets/Sets the horizontal scroll bar visibility.
@@ -1043,7 +1043,7 @@ public class TextEditor : Control, ITextEditorComponent, IServiceProvider, IWeak
     /// <summary>
     /// Dependency property for <see cref="VerticalScrollBarVisibility"/>
     /// </summary>
-    public static readonly DependencyProperty VerticalScrollBarVisibilityProperty = ScrollViewer.VerticalScrollBarVisibilityProperty.AddOwner(typeof(TextEditor), new FrameworkPropertyMetadata(ScrollBarVisibility.Visible));
+    public static readonly DependencyProperty? VerticalScrollBarVisibilityProperty = ScrollViewer.VerticalScrollBarVisibilityProperty.AddOwner(typeof(TextEditor), new FrameworkPropertyMetadata(ScrollBarVisibility.Visible));
 
     /// <summary>
     /// Gets/Sets the vertical scroll bar visibility.
@@ -1065,12 +1065,13 @@ public class TextEditor : Control, ITextEditorComponent, IServiceProvider, IWeak
     /// <returns>The text view position, or null if the point is outside the document.</returns>
     public TextViewPosition? GetPositionFromPoint(Point point)
     {
-        if (Document == null)
+        if (Document is null)
         {
             return null;
         }
 
-        TextView textView = TextArea.TextView;
+        TextView? textView = TextArea.TextView;
+
         return textView.GetPosition(TranslatePoint(point, textView) + textView.ScrollOffset);
     }
 
@@ -1087,6 +1088,7 @@ public class TextEditor : Control, ITextEditorComponent, IServiceProvider, IWeak
     public void ScrollTo(int line, int column)
     {
         const double MinimumScrollFraction = 0.3;
+
         ScrollTo(line, column, VisualYPosition.Middle, null != scrollViewer ? scrollViewer.ViewportHeight / 2 : 0.0, MinimumScrollFraction);
     }
 
@@ -1116,18 +1118,20 @@ public class TextEditor : Control, ITextEditorComponent, IServiceProvider, IWeak
                 line = document.LineCount;
             }
 
-            IScrollInfo scrollInfo = textView;
+            IScrollInfo? scrollInfo = textView;
+
             if (!scrollInfo.CanHorizontallyScroll)
             {
                 // Word wrap is enabled. Ensure that we have up-to-date info about line height so that we scroll
                 // to the correct position.
                 // This avoids that the user has to repeat the ScrollTo() call several times when there are very long lines.
-                VisualLine vl = textView.GetOrConstructVisualLine(document.GetLineByNumber(line));
+                VisualLine? vl = textView.GetOrConstructVisualLine(document.GetLineByNumber(line));
                 double remainingHeight = referencedVerticalViewPortOffset;
 
                 while (remainingHeight > 0)
                 {
                     var prevLine = vl.FirstLine.PreviousLine;
+
                     if (prevLine == null)
                     {
                         break;
@@ -1140,15 +1144,18 @@ public class TextEditor : Control, ITextEditorComponent, IServiceProvider, IWeak
 
             Point p = textArea.TextView.GetVisualPosition(new TextViewPosition(line, Math.Max(1, column)), yPositionMode);
             double verticalPos = p.Y - referencedVerticalViewPortOffset;
+
             if (Math.Abs(verticalPos - scrollViewer.VerticalOffset) > minimumScrollFraction * scrollViewer.ViewportHeight)
             {
                 scrollViewer.ScrollToVerticalOffset(Math.Max(0, verticalPos));
             }
+            
             if (column > 0)
             {
                 if (p.X > scrollViewer.ViewportWidth - Caret.MinimumDistanceToViewBorder * 2)
                 {
                     double horizontalPos = Math.Max(0, p.X - scrollViewer.ViewportWidth / 2);
+
                     if (Math.Abs(horizontalPos - scrollViewer.HorizontalOffset) > minimumScrollFraction * scrollViewer.ViewportWidth)
                     {
                         scrollViewer.ScrollToHorizontalOffset(horizontalPos);

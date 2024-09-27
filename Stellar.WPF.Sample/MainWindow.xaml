@@ -1,0 +1,90 @@
+﻿<Window
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+        xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+        xmlns:local="clr-namespace:Stellar.WPF.Sample"
+	    xmlns:forms="clr-namespace:System.Windows.Forms;assembly=System.Windows.Forms"
+        xmlns:WPF="clr-namespace:Stellar.WPF;assembly=Stellar.WPF" x:Class="Stellar.WPF.Sample.MainWindow"
+        xmlns:Styling="clr-namespace:Stellar.WPF.Styling;assembly=Stellar.WPF"
+        mc:Ignorable="d"
+        Title="Stellar.WPF.Sample" Height="450" Width="800">
+    <DockPanel>
+        <ToolBar DockPanel.Dock="Top">
+            <ToolBar.Resources>
+                <Style TargetType="{x:Type Image}">
+                    <Style.Triggers>
+                        <DataTrigger Binding="{Binding IsEnabled, RelativeSource={RelativeSource AncestorLevel=1, AncestorType={x:Type ButtonBase}}}" Value="False">
+                            <Setter Property="Opacity" Value="0.30" />
+                        </DataTrigger>
+                    </Style.Triggers>
+                </Style>
+            </ToolBar.Resources>
+            <Button Click="OpenFileClick">
+                <Image Source="Images/Open.png" Height="16"/>
+            </Button>
+            <Button Click="SaveFileClick">
+                <Image Source="Images/Save.png" Height="16"/>
+            </Button>
+            <Separator/>
+            <Button Command="Cut">
+                <Image Source="Images/Cut.png" Height="16"/>
+            </Button>
+            <Button Command="Copy">
+                <Image Source="Images/Copy.png" Height="16"/>
+            </Button>
+            <Button Command="Paste">
+                <Image Source="Images/Paste.png" Height="16"/>
+            </Button>
+            <Button Command="Delete">
+                <Image Source="Images/Delete.png" Height="16"/>
+            </Button>
+            <Separator/>
+            <Button Command="Undo">
+                <Image Source="Images/Undo.png" Height="16"/>
+            </Button>
+            <Button Command="Redo">
+                <Image Source="Images/Redo.png" Height="16"/>
+            </Button>
+            <Separator/>
+            <CheckBox IsChecked="{Binding WordWrap, ElementName=Editor}">
+                <Image Source="Images/WordWrap.png" Height="16"/>
+            </CheckBox>
+            <CheckBox IsChecked="{Binding ShowLineNumbers, ElementName=Editor}">
+                <TextBlock Width="16" TextAlignment="Center"><Run Text="#"/></TextBlock>
+            </CheckBox>
+            <CheckBox IsChecked="{Binding Options.ShowEndOfLine, ElementName=Editor}">
+                <TextBlock Width="16" TextAlignment="Center"><Run Text="¶"/></TextBlock>
+            </CheckBox>
+            <ComboBox Name="StylingDropdown"
+				SelectedItem="{Binding Syntax, ElementName=Editor}"
+				ItemsSource="{Binding Source={x:Static Styling:SyntaxManager.Instance}, Path=Syntaxes}"
+				SelectionChanged="StylingDropdown_SelectionChanged"/>
+        </ToolBar>
+        <Grid>
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="1*"/>
+                <ColumnDefinition Width="100"/>
+            </Grid.ColumnDefinitions>
+            <WPF:TextEditor
+                Name="Editor"
+                FontFamily="Consolas"
+                FontSize="10pt">
+                <!--Syntax="C#">-->
+                Welcome to Stellar WPF Editor!
+            </WPF:TextEditor>
+            <GridSplitter Grid.Column="1" Width="4" HorizontalAlignment="Left"/>
+            <DockPanel Grid.Column="1" Margin="4 0 0 0">
+                <ComboBox x:Name="propertyGridComboBox" DockPanel.Dock="Top"
+				          SelectedIndex="0" SelectionChanged="PropertyGridComboBoxSelectionChanged">
+                    <ComboBoxItem Content="TextEditor"/>
+                    <ComboBoxItem Content="TextArea"/>
+                    <ComboBoxItem Content="Options"/>
+                </ComboBox>
+                <WindowsFormsHost DockPanel.Dock="Right" Name="propertyGridHost">
+                    <forms:PropertyGrid x:Name="propertyGrid"/>
+                </WindowsFormsHost>
+            </DockPanel>
+        </Grid>
+    </DockPanel>
+</Window>

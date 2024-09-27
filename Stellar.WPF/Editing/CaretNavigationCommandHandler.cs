@@ -466,7 +466,7 @@ static class CaretNavigationCommandHandler
         if (targetLine is not null)
         {
             var y = targetVisualLine.GetTextLineVisualYPosition(targetLine, VisualYPosition.Middle);
-            var newCol = targetVisualLine.GetVisualColumn(new System.Windows.Point(xPos, y), enableVirtualSpace);
+            var newCol = targetVisualLine.GetVisualColumn(new Point(xPos, y), enableVirtualSpace);
 
             // prevent wrapping to the next line; TODO: could 'IsAtEnd' help here?
             var targetLineStartCol = targetVisualLine.GetTextLineStartColumn(targetLine);

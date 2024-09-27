@@ -156,7 +156,7 @@ public class TextView : FrameworkElement, IScrollInfo, IWeakEventListener, IText
     /// <inheritdoc cref="IWeakEventListener.ReceiveWeakEvent"/>
     protected virtual bool ReceiveWeakEvent(Type managerType, object sender, EventArgs e)
     {
-        if (managerType == typeof(Document.WeakDocumentEventManager.Changing))
+        if (managerType == typeof(WeakDocumentEventManager.Changing))
         {
             // TODO: put redraw into background so that other input events can be handled before the redraw.
             // Unfortunately the "easy" approach (just use DispatcherPriority.Background) here makes the editor twice as slow because

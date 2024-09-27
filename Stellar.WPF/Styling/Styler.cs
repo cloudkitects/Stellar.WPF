@@ -402,11 +402,5 @@ namespace Stellar.WPF.Styling
 
             isInStylingGroup = false;
         }
-
-        /// <inheritdoc/>
-        public Style GetStyle(string name)
-        {
-            return syntax.GetStyle(name);
-        }
     }
 }

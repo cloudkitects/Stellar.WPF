@@ -275,22 +275,22 @@ namespace Stellar.WPF.Editing
         /// <inheritdoc cref="IWeakEventListener.ReceiveWeakEvent"/>
         protected virtual bool ReceiveWeakEvent(Type managerType, object sender, EventArgs e)
         {
-            if (managerType == typeof(Document.WeakDocumentEventManager.Changing))
+            if (managerType == typeof(WeakDocumentEventManager.Changing))
             {
                 OnDocumentChanging();
                 return true;
             }
-            else if (managerType == typeof(Document.WeakDocumentEventManager.Changed))
+            else if (managerType == typeof(WeakDocumentEventManager.Changed))
             {
                 OnDocumentChanged((DocumentChangeEventArgs)e);
                 return true;
             }
-            else if (managerType == typeof(Document.WeakDocumentEventManager.UpdateStarted))
+            else if (managerType == typeof(WeakDocumentEventManager.UpdateStarted))
             {
                 OnUpdateStarted();
                 return true;
             }
-            else if (managerType == typeof(Document.WeakDocumentEventManager.UpdateFinished))
+            else if (managerType == typeof(WeakDocumentEventManager.UpdateFinished))
             {
                 OnUpdateFinished();
                 return true;
